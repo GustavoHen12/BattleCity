@@ -1,2 +1,2 @@
-# BatleCity
+# BattleCity
 Projeto Prog 2
