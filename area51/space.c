@@ -12,8 +12,8 @@ typedef struct{
     ALLEGRO_BITMAP* sprite;
 } obj;
 
-void initObj(obj *objeto, char *spritefile){
-    objeto->sprite = sprites.ship;
+void initObj(obj *objeto){
+    objeto->sprite = sprites.xWing;
     objeto->dx = 0;
     objeto->dy = 0;
     objeto->x = 0;
@@ -33,12 +33,8 @@ void setDelta(obj *objeto, int dx, int dy){
 bool eventTimer(unsigned char key[ALLEGRO_KEY_MAX], obj *nave){
     bool done =  false;
 
-    if(key[ALLEGRO_KEY_UP])
-        nave->y-=2;
-    if(key[ALLEGRO_KEY_DOWN])
-        nave->y+=2;
     if(key[ALLEGRO_KEY_LEFT])
-        nave->x-=2;
+        nave->x-=4;
     if(key[ALLEGRO_KEY_RIGHT])
         nave->x+=4;
 
@@ -55,7 +51,8 @@ int main (){
     initDisplay();
     sprites_init();
     obj nave;
-    initObj(&nave, "assets/xWing.png");
+    initObj(&nave);
+    setPos(&nave, (DISPLAY_WIDHT/2), (DISPLAY_HEIGH-130));
     
     bool done = false;
     bool redraw = true;
