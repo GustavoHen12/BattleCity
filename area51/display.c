@@ -22,11 +22,16 @@ int initDisplay () {
     al_set_new_display_option(ALLEGRO_SAMPLES, 8, ALLEGRO_SUGGEST);
     al_set_new_bitmap_flags(ALLEGRO_MIN_LINEAR | ALLEGRO_MAG_LINEAR);
 
-    disp = al_create_display(DISPLAY_HEIGH, DISPLAY_WIDHT);
+    disp = al_create_display( DISPLAY_WIDHT,DISPLAY_HEIGH);
     must_init(disp, "display");
+
+    buffer = al_create_bitmap(BUFFER_WIDHT, BUFFER_HEIGHT);
+    must_init(buffer, "bitmap buffer");
 
     font = al_create_builtin_font();
     must_init(font, "font");
+
+    must_init(al_init_image_addon(), "image addon");
 
     al_register_event_source(queue, al_get_keyboard_event_source());
     al_register_event_source(queue, al_get_display_event_source(disp));
@@ -38,8 +43,50 @@ void startFPS(){
     al_start_timer(timer);
 }
 
-void drawDisplay(int x, int y, char c){
+void drawDisplay(int x, int y, ALLEGRO_BITMAP *sprite){
     al_clear_to_color(al_map_rgb(0, 0, 0));
     al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", x, y);
-    al_draw_textf(font, al_map_rgb(255, 255, 255), x, y, 0, "%c", c);
+    al_draw_bitmap(sprite, x, y, 0);
+    //al_draw_textf(font, al_map_rgb(255, 255, 255), x, y, 0, "%c", c);
+}
+
+void closeDisplay(){
+    al_destroy_font(font);
+    al_destroy_display(disp);
+    al_destroy_timer(timer);
+    al_destroy_event_queue(queue);
+    al_destroy_display(disp);
+}
+
+void beforeDraw(){
+    al_set_target_bitmap(buffer);
+}
+
+void showDraw(){
+    al_set_target_backbuffer(disp);
+    al_draw_scaled_bitmap(buffer, 0, 0, BUFFER_WIDHT, BUFFER_HEIGHT, 0, 0, DISPLAY_WIDHT, DISPLAY_HEIGH, 0);
+
+    al_flip_display();
+}
+
+ALLEGRO_BITMAP *loadSprite(char *filename){
+    ALLEGRO_BITMAP* sprite = al_load_bitmap(filename);
+    must_init(sprite, "sprite");
+
+    return sprite;
+}
+
+ALLEGRO_BITMAP* sprite_grab(int x, int y, int w, int h)
+{
+    ALLEGRO_BITMAP* sprite = al_create_sub_bitmap(sprites._sheet, x, y, w, h);
+    must_init(sprite, "sprite grab");
+    return sprite;
+}
+
+void sprites_init()
+{
+    sprites._sheet = al_load_bitmap("assets/spritesheet.png");
+    must_init(sprites._sheet, "spritesheet");
+
+    sprites.ship = sprite_grab(0, 0, 30, 40);
 }

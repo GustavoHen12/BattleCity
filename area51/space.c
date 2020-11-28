@@ -9,11 +9,11 @@
 typedef struct{
     int x, y;
     int dx, dy;
-    char sprite;
+    ALLEGRO_BITMAP* sprite;
 } obj;
 
-void initObj(obj *objeto, char sprite){
-    objeto->sprite = sprite;
+void initObj(obj *objeto, char *spritefile){
+    objeto->sprite = sprites.ship;
     objeto->dx = 0;
     objeto->dy = 0;
     objeto->x = 0;
@@ -34,13 +34,13 @@ bool eventTimer(unsigned char key[ALLEGRO_KEY_MAX], obj *nave){
     bool done =  false;
 
     if(key[ALLEGRO_KEY_UP])
-        nave->y--;
+        nave->y-=2;
     if(key[ALLEGRO_KEY_DOWN])
-        nave->y++;
+        nave->y+=2;
     if(key[ALLEGRO_KEY_LEFT])
-        nave->x--;
+        nave->x-=2;
     if(key[ALLEGRO_KEY_RIGHT])
-        nave->x++;
+        nave->x+=4;
 
     if(key[ALLEGRO_KEY_ESCAPE])
         done = true;
@@ -53,8 +53,9 @@ bool eventTimer(unsigned char key[ALLEGRO_KEY_MAX], obj *nave){
 
 int main (){
     initDisplay();
+    sprites_init();
     obj nave;
-    initObj(&nave, '^');
+    initObj(&nave, "assets/xWing.png");
     
     bool done = false;
     bool redraw = true;
@@ -90,14 +91,13 @@ int main (){
             break;
         
         if(redraw && al_is_event_queue_empty(queue)){
+            beforeDraw();
             drawDisplay(nave.x, nave.y, nave.sprite);
-            al_flip_display();
+            showDraw();
             redraw = false;
         }
     }
-    al_destroy_font(font);
-    al_destroy_display(disp);
-    al_destroy_timer(timer);
-    al_destroy_event_queue(queue);
+
+    closeDisplay();
     return 0;
 }
