@@ -1,94 +1,107 @@
 #include"display.h"
 
-void must_init(bool test, const char *description)
-{
+void check (bool test, const char *boot) {
     if(test) return;
 
-    printf("couldn't initialize %s\n", description);
+    fprintf(stderr, "Não foi possível inicializar o %s\n", boot);
     exit(1);
 }
 
 int initDisplay () {
-    must_init(al_init(), "allegro");
-    must_init(al_install_keyboard(), "keyboard");
+    //Inicia o allegro
+    check(al_init(), "allegro");
+    check(al_install_keyboard(), "keyboard");
 
-    timer = al_create_timer(1.0 / 30.0);
-    must_init(timer, "timer");
+    //Inicia o timer que ira gerar o evento a 60fps
+    timer = al_create_timer(1.0 / 60.0);
+    check(timer, "timer");
 
+    //Inicia fila de eventos
     queue = al_create_event_queue();
-    must_init(queue, "queue");
+    check(queue, "queue");
 
+    //Seta as configurações da tela
     al_set_new_display_option(ALLEGRO_SAMPLE_BUFFERS, 1, ALLEGRO_SUGGEST);
     al_set_new_display_option(ALLEGRO_SAMPLES, 8, ALLEGRO_SUGGEST);
     al_set_new_bitmap_flags(ALLEGRO_MIN_LINEAR | ALLEGRO_MAG_LINEAR);
 
-    disp = al_create_display( DISPLAY_WIDHT,DISPLAY_HEIGH);
-    must_init(disp, "display");
+    //Inicia tela de DISPLAY_WIDHT x DISPLAY_HEIGH
+    screen = al_create_display( DISPLAY_WIDHT,DISPLAY_HEIGH);
+    check(screen, "display");
 
+    //Inicia o buffer da tela
     buffer = al_create_bitmap(BUFFER_WIDHT, BUFFER_HEIGHT);
-    must_init(buffer, "bitmap buffer");
+    check(buffer, "bitmap buffer");
 
+    //Inicia font
     font = al_create_builtin_font();
-    must_init(font, "font");
+    check(font, "font");
 
-    must_init(al_init_image_addon(), "image addon");
+    //Inicia imagens
+    check(al_init_image_addon(), "image addon");
 
+    //Registra as fontes de eventos
     al_register_event_source(queue, al_get_keyboard_event_source());
-    al_register_event_source(queue, al_get_display_event_source(disp));
+    al_register_event_source(queue, al_get_display_event_source(screen));
     al_register_event_source(queue, al_get_timer_event_source(timer));
     return 1;
 }
 
 void startFPS(){
+    //inicia a contagem do timer
     al_start_timer(timer);
-}
-
-void drawDisplay(int x, int y, ALLEGRO_BITMAP *sprite){
-    al_clear_to_color(al_map_rgb(0, 0, 0));
-    al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", x, y);
-    al_draw_bitmap(sprite, x, y, 0);
-}
-
-void closeDisplay(){
-    al_destroy_font(font);
-    al_destroy_display(disp);
-    al_destroy_timer(timer);
-    al_destroy_event_queue(queue);
-    al_destroy_display(disp);
 }
 
 void beforeDraw(){
     al_set_target_bitmap(buffer);
+    al_clear_to_color(al_map_rgb(0, 0, 0));
+    // al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", x, y);
+}
+
+void drawDisplay(int x, int y, ALLEGRO_BITMAP *sprite){
+    //desenha o sprite "sprite" na tela na posicação (x, y)
+    al_draw_bitmap(sprite, x, y, 0);
 }
 
 void showDraw(){
-    al_set_target_backbuffer(disp);
+    al_set_target_backbuffer(screen);
     al_draw_scaled_bitmap(buffer, 0, 0, BUFFER_WIDHT, BUFFER_HEIGHT, 0, 0, DISPLAY_WIDHT, DISPLAY_HEIGH, 0);
 
     al_flip_display();
 }
 
-ALLEGRO_BITMAP *loadSprite(char *filename){
-    ALLEGRO_BITMAP* sprite = al_load_bitmap(filename);
-    must_init(sprite, "sprite");
-
-    return sprite;
+void closeDisplay(){
+    //destroi objetos criados
+    al_destroy_font(font);
+    al_destroy_display(screen);
+    al_destroy_timer(timer);
+    al_destroy_event_queue(queue);
+    al_destroy_display(screen);
 }
 
-ALLEGRO_BITMAP* sprite_grab(int x, int y, int w, int h)
-{
-    ALLEGRO_BITMAP* sprite = al_create_sub_bitmap(sprites._sheet, x, y, w, h);
-    must_init(sprite, "sprite grab");
-    return sprite;
-}
-
-void sprites_init()
+void spritesInit()
 {
     sprites._sheet = al_load_bitmap("assets/spritesheet.png");
-    must_init(sprites._sheet, "spritesheet");
+    check(sprites._sheet, "spritesheet");
 
-    sprites.xWing = sprite_grab(495, 0, xWing_H, xWing_W);
+    // sprites.xWing = sprite_grab(495, 0, xWing_H, xWing_W);
 
-    sprites.tie1 = sprite_grab(103, 300, tie_H, tie_W);
-    sprites.tie2 = sprite_grab(325, 220, tie_H, tie_W);
+    // sprites.tie1 = sprite_grab(103, 300, tie_H, tie_W);
+    // sprites.tie2 = sprite_grab(325, 220, tie_H, tie_W);
 }
+
+
+/*
+* "Retira" uma area do spritesheet
+* Assim a partir de um posição (x, y) da imagem fonte 
+* é retirado um sprite de tamanho "h" x "w"
+*/
+ALLEGRO_BITMAP* sprite_grab(int x, int y, int w, int h)
+{
+    //retira região da image
+    ALLEGRO_BITMAP* sprite = al_create_sub_bitmap(sprites._sheet, x, y, w, h);
+    //verifica se a operação ocorreu de acordo e returna ponteiro para o sprite
+    check(sprite, "sprite grab");
+    return sprite;
+}
+
