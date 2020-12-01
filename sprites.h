@@ -6,8 +6,8 @@
 #include <allegro5/allegro_primitives.h>
 
 //define tamanho dos sprites(px)
-#define TANK_H
-#define TANK_W
+#define TANK_H 20 //(1.5, 25)
+#define TANK_W 19
 #define ENEMIES_H
 #define ENEMIES_w
 #define BLOCK_H

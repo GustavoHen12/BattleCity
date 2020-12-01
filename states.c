@@ -1,9 +1,11 @@
 #include "states.h"
+//todo: achar um lugar melhor pra isso
+#define KEY_SEEN     1
+#define KEY_RELEASED 2
 
 void play(){
-    #define KEY_SEEN     1
-    #define KEY_RELEASED 2
-    
+    //instancia variaveis
+
     //laço principal
     bool done = false;
     bool redraw = true;
@@ -17,7 +19,9 @@ void play(){
         switch(event.type)
         {
             case ALLEGRO_EVENT_TIMER:
-                //done = eventTimer(key, &nave);
+                //movTank(key, &nave);
+                //movGame();
+                //colisionDetection();
                 redraw = true;
                 break;
             
