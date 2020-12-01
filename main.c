@@ -1,8 +1,6 @@
 #include<stdio.h>
 #include"states.h"
 
-enum{ START, INIT_STAGE, PLAY, GAME_OVER, LEFT_GAME } state;
-
 int main(){
     state = START;
     for(;;){
@@ -12,16 +10,16 @@ int main(){
                 start();
                 break;
             case INIT_STAGE:
-                init_stage();
+                //init_stage();
                 break;
             case PLAY:
                 play();
                 break;
             case GAME_OVER:
-                gameOver();
+                //gameOver();
                 break;
             case LEFT_GAME:
-                leftGame();
+                //leftGame();
                 break;
             default:
                 break;

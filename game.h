@@ -12,7 +12,7 @@ typedef struct {
     //tipo: tanque, inimigo, bloco...
     int type;
     //quantidade de vidas
-    int life
+    int life;
 } GameObject_t;
 
 //inicia
@@ -22,5 +22,5 @@ typedef struct {
 //adiciona inimigo
 
 //movimenta tanque
-setPosition();
+void setPosition();
 //movimenta jogo
