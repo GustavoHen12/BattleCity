@@ -16,11 +16,14 @@ ALLEGRO_BITMAP* buffer;
 
 //configurações da tela
 #define DISPLAY_SCALE 1
-#define BUFFER_WIDHT 450
-#define BUFFER_HEIGHT 650
+#define BUFFER_WIDHT 650 //TODO: RETIRAR BUFFER
+#define BUFFER_HEIGHT 500
 #define DISPLAY_HEIGH (BUFFER_HEIGHT * DISPLAY_SCALE)
 #define DISPLAY_WIDHT (BUFFER_WIDHT * DISPLAY_SCALE)
 
+#define KEY_SEEN     1
+#define KEY_RELEASED 2
+enum keybord {UP, DOWN, LEFT, RIGHT, OUT} input;
 
 typedef ALLEGRO_EVENT TimerEvent_t;
 
@@ -44,7 +47,7 @@ void beforeDraw();
 /*
 * desenha um sprite na tela, nas posições (x, y)
 */
-void drawDisplay(int x, int y, ALLEGRO_BITMAP *sprite);
+void drawDisplay(int x, int y, int type);
 
 /*
 * Exibe as imagens que foram desenhadas na tela

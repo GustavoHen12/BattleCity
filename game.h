@@ -1,5 +1,6 @@
 //LOGICA DO JOGO
 #include<stdio.h>
+#include<stdlib.h>
 
 //todo: não sei se isso vai funcionar
 enum {TANK, ENEMIES, BLOCK, EAGLE, FLAG} type_obj;
@@ -16,11 +17,13 @@ typedef struct {
 } GameObject_t;
 
 //inicia
+GameObject_t initGameObject(int x, int y, int type);
+
+//movimenta tanque
+void setPosition(GameObject_t *objeto, int x, int y);
+
+//movimenta jogo
 
 //veirifa colisao
 
 //adiciona inimigo
-
-//movimenta tanque
-void setPosition();
-//movimenta jogo

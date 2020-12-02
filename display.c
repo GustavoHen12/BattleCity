@@ -7,7 +7,7 @@ void check (bool test, const char *boot) {
     exit(1);
 }
 
-int initDisplay () {
+int initConf () {
     //Inicia o allegro
     check(al_init(), "allegro");
     check(al_install_keyboard(), "keyboard");
@@ -47,6 +47,42 @@ int initDisplay () {
     return 1;
 }
 
+/*
+* "Retira" uma area do spritesheet
+* Assim a partir de um posição (x, y) da imagem fonte 
+* é retirado um sprite de tamanho "h" x "w"
+*/
+ALLEGRO_BITMAP* sprite_grab(int x, int y, int w, int h)
+{
+    //retira região da image
+    ALLEGRO_BITMAP* sprite = al_create_sub_bitmap(sprites._sheet, x, y, w, h);
+    //verifica se a operação ocorreu de acordo e returna ponteiro para o sprite
+    check(sprite, "sprite grab");
+    return sprite;
+}
+
+
+void initSprites()
+{
+    sprites._sheet = al_load_bitmap("assets/spritesheet_battleCity.png");
+    check(sprites._sheet, "spritesheet");
+
+    sprites.tank[0] = sprite_grab(2, 2, 30, 30);
+
+    // sprites.tie1 = sprite_grab(103, 300, tie_H, tie_W);
+    // sprites.tie2 = sprite_grab(325, 220, tie_H, tie_W);
+}
+
+int initDisplay (){
+    //inicia as configurações do display
+    initConf();
+
+    //inicia sprites
+    initSprites();
+
+    return 1;
+}
+
 void startFPS(){
     //inicia a contagem do timer
     al_start_timer(timer);
@@ -58,8 +94,12 @@ void beforeDraw(){
     // al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", x, y);
 }
 
-void drawDisplay(int x, int y, ALLEGRO_BITMAP *sprite){
+void drawDisplay(int x, int y, int type){
     //desenha o sprite "sprite" na tela na posicação (x, y)
+    ALLEGRO_BITMAP* sprite;
+    if(type == 0){
+        sprite = sprites.tank[0];
+    }
     al_draw_bitmap(sprite, x, y, 0);
 }
 
@@ -79,29 +119,24 @@ void closeDisplay(){
     al_destroy_display(screen);
 }
 
-void spritesInit()
-{
-    sprites._sheet = al_load_bitmap("assets/spritesheet.png");
-    check(sprites._sheet, "spritesheet");
+// int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
+//     bool done =  false;
+//     int input = -1;
 
-    // sprites.xWing = sprite_grab(495, 0, xWing_H, xWing_W);
+//     if(key[ALLEGRO_KEY_LEFT])
+//         return LEFT;
+//     if(key[ALLEGRO_KEY_RIGHT])
+//         return RIGHT;
+//     if(key[ALLEGRO_KEY_UP])
+//         return UP;
+//     if(key[ALLEGRO_KEY_DOWN])
+//         return DOWN;
 
-    // sprites.tie1 = sprite_grab(103, 300, tie_H, tie_W);
-    // sprites.tie2 = sprite_grab(325, 220, tie_H, tie_W);
-}
+//     if(key[ALLEGRO_KEY_ESCAPE])
+//         return OUT;
 
-
-/*
-* "Retira" uma area do spritesheet
-* Assim a partir de um posição (x, y) da imagem fonte 
-* é retirado um sprite de tamanho "h" x "w"
-*/
-ALLEGRO_BITMAP* sprite_grab(int x, int y, int w, int h)
-{
-    //retira região da image
-    ALLEGRO_BITMAP* sprite = al_create_sub_bitmap(sprites._sheet, x, y, w, h);
-    //verifica se a operação ocorreu de acordo e returna ponteiro para o sprite
-    check(sprite, "sprite grab");
-    return sprite;
-}
-
+//     for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
+//         key[i] &= KEY_SEEN;
+    
+//     return -1;
+// }
