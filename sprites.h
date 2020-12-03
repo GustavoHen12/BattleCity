@@ -17,6 +17,8 @@
 #define FLAG_H
 #define FLAG_W
 
+enum {SPRITE_UP, SPRITE_DOWN, SPRITE_LEFT, SPRITE_RIGHT} sprite_directions;
+
 typedef struct SPRITES
 {
     ALLEGRO_BITMAP* _sheet;

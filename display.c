@@ -67,10 +67,11 @@ void initSprites()
     sprites._sheet = al_load_bitmap("assets/spritesheet_battleCity.png");
     check(sprites._sheet, "spritesheet");
 
-    sprites.tank[0] = sprite_grab(2, 2, 30, 30);
+    sprites.tank[SPRITE_UP] = sprite_grab(2, 2, 30, 30);
+    sprites.tank[SPRITE_RIGHT] = sprite_grab(2, 33, 30, 30);
+    sprites.tank[SPRITE_DOWN] = sprite_grab(2, 64, 30, 30);
+    sprites.tank[SPRITE_LEFT] = sprite_grab(2, 95, 30, 30);
 
-    // sprites.tie1 = sprite_grab(103, 300, tie_H, tie_W);
-    // sprites.tie2 = sprite_grab(325, 220, tie_H, tie_W);
 }
 
 int initDisplay (){
@@ -94,11 +95,11 @@ void beforeDraw(){
     // al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", x, y);
 }
 
-void drawDisplay(int x, int y, int type){
+void drawDisplay(int x, int y, int type, int direction){
     //desenha o sprite "sprite" na tela na posicação (x, y)
     ALLEGRO_BITMAP* sprite;
     if(type == 0){
-        sprite = sprites.tank[0];
+        sprite = sprites.tank[direction];
     }
     al_draw_bitmap(sprite, x, y, 0);
 }
@@ -118,25 +119,3 @@ void closeDisplay(){
     al_destroy_event_queue(queue);
     al_destroy_display(screen);
 }
-
-// int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
-//     bool done =  false;
-//     int input = -1;
-
-//     if(key[ALLEGRO_KEY_LEFT])
-//         return LEFT;
-//     if(key[ALLEGRO_KEY_RIGHT])
-//         return RIGHT;
-//     if(key[ALLEGRO_KEY_UP])
-//         return UP;
-//     if(key[ALLEGRO_KEY_DOWN])
-//         return DOWN;
-
-//     if(key[ALLEGRO_KEY_ESCAPE])
-//         return OUT;
-
-//     for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
-//         key[i] &= KEY_SEEN;
-    
-//     return -1;
-// }

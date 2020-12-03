@@ -23,7 +23,6 @@ ALLEGRO_BITMAP* buffer;
 
 #define KEY_SEEN     1
 #define KEY_RELEASED 2
-enum keybord {UP, DOWN, LEFT, RIGHT, OUT} input;
 
 typedef ALLEGRO_EVENT TimerEvent_t;
 
@@ -47,7 +46,7 @@ void beforeDraw();
 /*
 * desenha um sprite na tela, nas posições (x, y)
 */
-void drawDisplay(int x, int y, int type);
+void drawDisplay(int x, int y, int type, int direction);
 
 /*
 * Exibe as imagens que foram desenhadas na tela

@@ -26,13 +26,13 @@ void play(){
         {
             case ALLEGRO_EVENT_TIMER:
                 if(key[ALLEGRO_KEY_LEFT])
-                    setPosition(&tank, tank.x-1, tank.y);
+                    moveTank(&tank, LEFT);
                 if(key[ALLEGRO_KEY_RIGHT])
-                    setPosition(&tank, tank.x+1, tank.y);
+                    moveTank(&tank, RIGHT);
                 if(key[ALLEGRO_KEY_UP])
-                    setPosition(&tank, tank.x, tank.y-1);
+                    moveTank(&tank, UP);
                 if(key[ALLEGRO_KEY_DOWN])
-                    setPosition(&tank, tank.x, tank.y+1);
+                    moveTank(&tank, DOWN);
 
                 if(key[ALLEGRO_KEY_ESCAPE])
                     done = true;
@@ -63,7 +63,7 @@ void play(){
         
         if(redraw && al_is_event_queue_empty(queue)){
             beforeDraw();
-            drawDisplay(tank.x, tank.y, tank.type);
+            drawDisplay(tank.x, tank.y, tank.type, tank.direction);
             showDraw();
             redraw = false;
         }
