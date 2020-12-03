@@ -6,17 +6,33 @@ void initGame(){
 
 void start(){
     initGame();
-    state = PLAY;
+    state = INIT_STAGE;
 }
 
+void init_stage(){
+    state = PLAY;
+}
+int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
+    if(key[ALLEGRO_KEY_LEFT])
+        return LEFT;
+    if(key[ALLEGRO_KEY_RIGHT])
+        return RIGHT;
+    if(key[ALLEGRO_KEY_UP])
+        return UP;
+    if(key[ALLEGRO_KEY_DOWN])
+        return DOWN;
+    return -1;
+}
 void play(){
     //instancia variaveis
     GameObject_t tank = initGameObject(10, 10, TANK);
+    InitGame();
+    int input = -1;
+    int cicle = 0;
     //laço principal
     bool done = false;
     bool redraw = true;
     TimerEvent_t event;
-
     unsigned char key[ALLEGRO_KEY_MAX];
     memset(key, 0, sizeof(key));
     startFPS();
@@ -25,21 +41,16 @@ void play(){
         switch(event.type)
         {
             case ALLEGRO_EVENT_TIMER:
-                if(key[ALLEGRO_KEY_LEFT])
-                    moveTank(&tank, LEFT);
-                if(key[ALLEGRO_KEY_RIGHT])
-                    moveTank(&tank, RIGHT);
-                if(key[ALLEGRO_KEY_UP])
-                    moveTank(&tank, UP);
-                if(key[ALLEGRO_KEY_DOWN])
-                    moveTank(&tank, DOWN);
+                input = readInput(key);
+                if(input != -1)
+                    moveTank(&tank, input);
 
                 if(key[ALLEGRO_KEY_ESCAPE])
                     done = true;
 
                 for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
                     key[i] &= KEY_SEEN;
-                //movTank(key, &nave);
+                nextCicle(&cicle);
                 //movGame();
                 //colisionDetection();
                 redraw = true;
@@ -64,9 +75,15 @@ void play(){
         if(redraw && al_is_event_queue_empty(queue)){
             beforeDraw();
             drawDisplay(tank.x, tank.y, tank.type, tank.direction);
+            for(int i = 0; i < ENEMIES_QUANT; i++){
+                GameObject_t enemie;
+                enemie = game.enemies[i];
+                drawDisplay(enemie.x, enemie.y, enemie.type, enemie.direction);
+            }
             showDraw();
             redraw = false;
         }
+        cicle++;
     }
     closeDisplay();
     state = 8;

@@ -6,11 +6,16 @@
 enum{ START, INIT_STAGE, PLAY, GAME_OVER, LEFT_GAME } state;
 
 /*
-*Laço principal do jogo
+* Laço principal do jogo
 */
 void play();
 
 /*
-* Configurações iniciais, exibe menu
+* Configurações do jogo
+*/
+void init_stage();
+
+/*
+* Configurações iniciais de tela, exibe menu
 */
 void start();

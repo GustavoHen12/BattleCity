@@ -72,6 +72,11 @@ void initSprites()
     sprites.tank[SPRITE_DOWN] = sprite_grab(2, 64, 30, 30);
     sprites.tank[SPRITE_LEFT] = sprite_grab(2, 95, 30, 30);
 
+    sprites.enemies[SPRITE_UP] = sprite_grab(2, 126, 30, 32);
+    sprites.enemies[SPRITE_RIGHT] = sprite_grab(2, 157, 30, 32);
+    sprites.enemies[SPRITE_DOWN] = sprite_grab(2, 188, 30, 32);
+    sprites.enemies[SPRITE_LEFT] = sprite_grab(2, 219, 30, 32);
+
 }
 
 int initDisplay (){
@@ -98,8 +103,11 @@ void beforeDraw(){
 void drawDisplay(int x, int y, int type, int direction){
     //desenha o sprite "sprite" na tela na posicação (x, y)
     ALLEGRO_BITMAP* sprite;
-    if(type == 0){
+    if(type == SPRITE_TANK){
         sprite = sprites.tank[direction];
+    }
+    if(type == SPRITE_ENEMIES){
+        sprite = sprites.enemies[direction];
     }
     al_draw_bitmap(sprite, x, y, 0);
 }

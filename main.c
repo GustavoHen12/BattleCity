@@ -10,7 +10,7 @@ int main(){
                 start();
                 break;
             case INIT_STAGE:
-                //init_stage();
+                init_stage();
                 break;
             case PLAY:
                 play();
