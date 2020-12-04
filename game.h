@@ -7,9 +7,9 @@
 #define INTERVAL_GENERATE_ENEMIES 180
 #define ENEMIES_QUANT 4
 //todo: não sei se isso vai funcionar
-enum {TANK, ENEMIES, BLOCK, EAGLE, FLAG} type_obj;
+enum {TANK, ENEMIES, BLOCK, EAGLE, FLAG, SHOT} type_obj;
 
-enum {UP, DOWN, LEFT, RIGHT, SHOOT} directions;
+enum {UP, DOWN, LEFT, RIGHT} directions;
 
 typedef struct {
     //posicao
@@ -45,12 +45,13 @@ GameObject_t initGameObject(int x, int y, int type);
 void InitGame();
 
 //movimenta tanque
-void moveTank(GameObject_t *tank, int direction);
+void move(GameObject_t *tank, int direction);
 
 //movimenta jogo
 void nextCicle(int *cicle);
 
-
+//atira
+void shoot(GameObject_t *shooter);
 //veirifa colisao
 
 //adiciona inimigo

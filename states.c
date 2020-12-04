@@ -41,10 +41,14 @@ void play(){
         switch(event.type)
         {
             case ALLEGRO_EVENT_TIMER:
+                //movimenta tank
                 input = readInput(key);
                 if(input != -1)
-                    moveTank(&tank, input);
-
+                    move(&tank, input);
+                //atira
+                if(key[ALLEGRO_KEY_Z])
+                    shoot(&tank);
+                //fecha jogo
                 if(key[ALLEGRO_KEY_ESCAPE])
                     done = true;
 
@@ -74,11 +78,19 @@ void play(){
         
         if(redraw && al_is_event_queue_empty(queue)){
             beforeDraw();
+            //desenha tank
             drawDisplay(tank.x, tank.y, tank.type, tank.direction);
+            //desenha inimigos
             for(int i = 0; i < ENEMIES_QUANT; i++){
                 GameObject_t enemie;
                 enemie = game.enemies[i];
                 drawDisplay(enemie.x, enemie.y, enemie.type, enemie.direction);
+            }
+            //desenha tiro
+            for(int i = 0; i < game.shootsSize; i++){
+                GameObject_t shot;
+                shot = game.shoots[i];
+                drawDisplay(shot.x, shot.y, shot.type, shot.direction);
             }
             showDraw();
             redraw = false;

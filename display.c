@@ -35,10 +35,13 @@ int initConf () {
 
     //Inicia font
     font = al_create_builtin_font();
-    check(font, "font");
+    check(font, "fonte");
 
     //Inicia imagens
     check(al_init_image_addon(), "image addon");
+
+    //inicia primitivos
+    check(al_init_primitives_addon(), "primitivos");
 
     //Registra as fontes de eventos
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -105,11 +108,16 @@ void drawDisplay(int x, int y, int type, int direction){
     ALLEGRO_BITMAP* sprite;
     if(type == SPRITE_TANK){
         sprite = sprites.tank[direction];
+        al_draw_bitmap(sprite, x, y, 0);
     }
     if(type == SPRITE_ENEMIES){
         sprite = sprites.enemies[direction];
+        al_draw_bitmap(sprite, x, y, 0);
     }
-    al_draw_bitmap(sprite, x, y, 0);
+    if(type == SPRITE_SHOT){
+        al_draw_filled_circle(x, y, 2, al_map_rgb_f(1, 1, 1));
+    }
+
 }
 
 void showDraw(){
