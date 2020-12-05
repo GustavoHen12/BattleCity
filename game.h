@@ -9,8 +9,17 @@
 #define INTERVAL_GENERATE_ENEMIES 180
 #define ENEMIES_QUANT 4
 
+#define BLOCK_WIDTH 22
+#define BLOCK_HEIGHT 8
+
 typedef struct{
-    GameObject_t *map;
+    GameObject_t *blocks;
+    int x, y, height, width, quantBlock;
+} Wall_t;
+
+typedef struct{
+    //TODO: Renomear size = quant(?)
+    Wall_t *map;
     int mapSize;
 
     GameObject_t *enemies;
@@ -23,6 +32,7 @@ typedef struct{
 } Game_t;
 
 Game_t game;
+
 //inicia
 GameObject_t initGameObject(int x, int y, int dx, int dy, int type);
 
@@ -36,7 +46,11 @@ void nextCicle(int *cicle);
 
 //atira
 void shoot(GameObject_t *shooter);
+void updateShot();
+
 //veirifa colisao
 
 //adiciona inimigo
-void updateEnemies();
+int updateEnemies();
+
+void initMap();

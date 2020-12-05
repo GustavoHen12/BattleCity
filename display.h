@@ -5,8 +5,11 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 
+// ------------ Sprites ------------
 #include "sprites.h"
 
+
+// ------------ Variaveis globais e config do display ------------
 //inicia as variáveis globais que serão necessárias 
 ALLEGRO_TIMER* timer;
 ALLEGRO_EVENT_QUEUE* queue;
@@ -25,6 +28,23 @@ ALLEGRO_BITMAP* buffer;
 #define KEY_RELEASED 2
 
 typedef ALLEGRO_EVENT TimerEvent_t;
+
+// ------------ Efeitos ------------
+typedef struct FX
+{
+    int x, y;
+    int frame;
+    bool spark;
+    bool used;
+} FX;
+
+#define FX_N 128
+FX fx[FX_N];
+
+void fx_init();
+void fx_draw();
+void fx_update();
+void fx_add(int x, int y);
 
 /*
 * Esta funcao inicia um display de DISPLAY_HEIGHxDISPLAY_WIDHT

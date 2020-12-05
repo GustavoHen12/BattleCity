@@ -35,6 +35,8 @@ void play(){
     TimerEvent_t event;
     unsigned char key[ALLEGRO_KEY_MAX];
     memset(key, 0, sizeof(key));
+    fx_init();
+    initMap();
     startFPS();
     while(1){
         al_wait_for_event(queue, &event);
@@ -43,21 +45,23 @@ void play(){
             case ALLEGRO_EVENT_TIMER:
                 //movimenta tank
                 input = readInput(key);
-                if(input != -1)
-                    move(&tank, input);
+                if(input != -1) move(&tank, input);
                 //atira
-                if(key[ALLEGRO_KEY_Z])
-                    shoot(&tank);
-                //fecha jogo
-                if(key[ALLEGRO_KEY_ESCAPE])
-                    done = true;
+                if(key[ALLEGRO_KEY_Z]) shoot(&tank);
 
+                updateShot();
+
+                if(updateEnemies()){
+                    fx_add(game.shoots[0].x + 5, game.shoots[0].y + 5); //TODO: Arrumar posição explosão
+                }
+
+                fx_update();
+                
                 for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
                     key[i] &= KEY_SEEN;
-                nextCicle(&cicle);
-                updateEnemies();
-                //movGame();
-                //colisionDetection();
+
+                if(key[ALLEGRO_KEY_ESCAPE]) done = true;
+
                 redraw = true;
                 break;
             
@@ -79,20 +83,30 @@ void play(){
         
         if(redraw && al_is_event_queue_empty(queue)){
             beforeDraw();
-            //desenha tank
-            drawDisplay(tank.x, tank.y, tank.type, tank.direction);
-            //desenha inimigos
-            for(int i = 0; i < game.enemiesSize; i++){
-                GameObject_t enemie;
-                enemie = game.enemies[i];
-                drawDisplay(enemie.x, enemie.y, enemie.type, enemie.direction);
+            // //desenha tank
+            // drawDisplay(tank.x, tank.y, tank.type, tank.direction);
+            // //desenha inimigos
+            // for(int i = 0; i < game.enemiesSize; i++){
+            //     GameObject_t enemie;
+            //     enemie = game.enemies[i];
+            //     drawDisplay(enemie.x, enemie.y, enemie.type, enemie.direction);
+            // }
+            // //desenha tiro
+            // for(int i = 0; i < game.shootsSize; i++){
+            //     GameObject_t shot;
+            //     shot = game.shoots[i];
+            //     drawDisplay(shot.x, shot.y, shot.type, shot.direction);
+            // }
+            drawDisplay(100, 100, SPRITE_BLOCK, 0);
+            Wall_t wall = game.map[0];
+            for(int i = 0; i < wall.quantBlock; i++){
+                GameObject_t block;
+                block = wall.blocks[i];
+                printf("%d ->  %d %d %d\n", i, block.x, block.y, block.type);
+                drawDisplay(block.x, block.y, block.type, 0);
             }
-            //desenha tiro
-            for(int i = 0; i < game.shootsSize; i++){
-                GameObject_t shot;
-                shot = game.shoots[i];
-                drawDisplay(shot.x, shot.y, shot.type, shot.direction);
-            }
+            //desenha efeitos
+            fx_draw();
             showDraw();
             redraw = false;
         }

@@ -52,6 +52,10 @@ void InitGame(){
     for(int i = 0; i < game.shootsSize; i++){
         game.shoots[i] = initGameObject(-10, -10, 2, 2, SHOT);
     }
+
+    //Aloca espaço para paredes do mapa
+    game.map = malloc(sizeof(Wall_t)*12);
+    testMalloc(game.shoots, "mapa");
 }
 
 void nextCicle(int *cicle){
@@ -61,10 +65,6 @@ void nextCicle(int *cicle){
     //     }
     //     *cicle = 0;
     // }
-
-    GameObject_t *shot;
-    shot = &(game.shoots[game.shootsSize - 1]);
-    move(shot, shot->direction);
 }
 
 
@@ -129,14 +129,17 @@ int colision(GameObject_t *objA, int heightA, int widhtA, GameObject_t *objB, in
 */
 int kill(GameObject_t *objectList, int size, int index){
     objectList[index].life = 0;
+    GameObject_t temp = objectList[index];
     objectList[index] = objectList[size - 1];
+    objectList[size - 1] = temp;
     return size - 1;
 }
 // ------------ Tank ------------
 
 // ------------ Inimigos ------------
 
-void updateEnemies(){
+int updateEnemies(){
+    //TODO: Movimenta
     // verifica se colidiu com tiro
     GameObject_t shot = game.shoots[game.shootsSize - 1];
     int i = 0;
@@ -145,18 +148,57 @@ void updateEnemies(){
         enemie = game.enemies[i];
         if(colision(&enemie, 30, 32, &shot, 9, 8)){
             game.enemiesSize = kill(game.enemies, game.enemiesSize, i);
+            return 1;
         }else{
             i++;
         }
     }
+    return 0;
 }
-// ------------ Mapa ------------
 
+// ------------ Mapa ------------
+void initMap(){
+    Wall_t *wall = &(game.map[0]);
+    
+    wall->height = 80;
+    wall->width = 44;
+    wall->x = 10;
+    wall->y = 20;
+
+    // pega o tamanho, altura e direcao da parede
+    int height = wall->height, widht = wall->width;
+
+    // calcula quantos blocos serão necessarios
+    int heighBlocks = height / BLOCK_HEIGHT;
+    int widthBlocks = widht / BLOCK_WIDTH;
+    int totalBlocks = heighBlocks * widthBlocks;
+    
+    wall->quantBlock = totalBlocks;
+
+    printf(" %d %d %d\n", totalBlocks, heighBlocks, widthBlocks);
+    // aloca espaço para os blocos
+    wall->blocks = malloc(sizeof(GameObject_t) * totalBlocks);
+    testMalloc(wall->blocks, "blocos");
+
+    // cria os blocos
+    int x = wall->x, y = wall->y;
+    int index = 0;
+    for(int i = 0; i < heighBlocks; i++){
+        x = wall->x;
+        for(int j = 0; j < widthBlocks; j++){
+            wall->blocks[index] = initGameObject(x,y, 0, 0, BLOCK);
+            index++;
+            x+= BLOCK_WIDTH;
+        }
+        y+=BLOCK_HEIGHT;
+    }
+}
 // ------------ Tiro ------------
 
 void shoot(GameObject_t *shooter){
     //TODO: Arrumar posição inicial dos tiros
     //TODO: Verificar se já não existe um tiro em jogo
+    //TODO: Verificar colisão com paredes
     GameObject_t *shot;
     shot = &(game.shoots[game.shootsSize - 1]);
     if(shooter->direction == UP)
@@ -169,4 +211,10 @@ void shoot(GameObject_t *shooter){
         setPosition(shot, shooter->x + 30, shooter->y + 15);
     
     shot->direction = shooter->direction;
+}
+
+void updateShot(){
+    GameObject_t *shot;
+    shot = &(game.shoots[game.shootsSize - 1]);
+    move(shot, shot->direction);
 }

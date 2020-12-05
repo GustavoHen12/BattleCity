@@ -85,6 +85,11 @@ void initSprites()
     sprites.shots[SPRITE_DOWN] = sprite_grab(16, 350, 8, 9);
     sprites.shots[SPRITE_LEFT] = sprite_grab(24, 350, 8, 9);
 
+    sprites.explosion[0] = sprite_grab(255, 64, 32, 35);
+    sprites.explosion[1] = sprite_grab(290, 64, 32, 45);
+    sprites.explosion[2] = sprite_grab(320, 64, 45, 45);
+    
+    sprites.block = sprite_grab(90, 264, BLOCK_W, BLOCK_H);
 }
 
 int initDisplay (){
@@ -113,17 +118,18 @@ void drawDisplay(int x, int y, int type, int direction){
     ALLEGRO_BITMAP* sprite;
     if(type == SPRITE_TANK){
         sprite = sprites.tank[direction];
-        al_draw_bitmap(sprite, x, y, 0);
     }
     if(type == SPRITE_ENEMIES){
         sprite = sprites.enemies[direction];
-        al_draw_bitmap(sprite, x, y, 0);
     }
     if(type == SPRITE_SHOT){
         sprite = sprites.shots[direction];
-        al_draw_bitmap(sprite, x, y, 0);
+    }
+    if(type == SPRITE_BLOCK){
+        sprite = sprites.block;
     }
 
+    al_draw_bitmap(sprite, x, y, 0);
 }
 
 void showDraw(){
@@ -141,3 +147,58 @@ void closeDisplay(){
     al_destroy_event_queue(queue);
     al_destroy_display(screen);
 }
+
+// ------------ Efeitos -----------
+
+//TODO: REFATORAR OU COLOCAR CRÉDITOS
+void fx_init()
+{
+    for(int i = 0; i < FX_N; i++)
+        fx[i].used = false;
+}
+
+void fx_add(int x, int y)
+{
+    for(int i = 0; i < FX_N; i++)
+    {
+        if(fx[i].used)
+            continue;
+
+        fx[i].x = x;
+        fx[i].y = y;
+        fx[i].frame = 0;
+        fx[i].used = true;
+        return;
+    }
+}
+
+void fx_update()
+{
+    for(int i = 0; i < FX_N; i++)
+    {
+        if(!fx[i].used)
+            continue;
+
+        fx[i].frame++;
+
+        if(fx[i].frame == (EXPLOSION_FRAMES * 8))
+            fx[i].used = false;
+    }
+}
+
+void fx_draw()
+{
+    for(int i = 0; i < FX_N; i++)
+    {
+        if(!fx[i].used)
+            continue;
+
+        int frame_display = fx[i].frame / 8;
+        ALLEGRO_BITMAP *bmp =  sprites.explosion[frame_display];
+
+        int x = fx[i].x - (al_get_bitmap_width(bmp) / 2);
+        int y = fx[i].y - (al_get_bitmap_height(bmp) / 2);
+        al_draw_bitmap(bmp, x, y, 0);
+    }
+}
+
