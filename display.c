@@ -80,6 +80,11 @@ void initSprites()
     sprites.enemies[SPRITE_DOWN] = sprite_grab(2, 188, 30, 32);
     sprites.enemies[SPRITE_LEFT] = sprite_grab(2, 219, 30, 32);
 
+    sprites.shots[SPRITE_UP] = sprite_grab(0, 350, 8, 9);
+    sprites.shots[SPRITE_RIGHT] = sprite_grab(8, 350, 8, 9);
+    sprites.shots[SPRITE_DOWN] = sprite_grab(16, 350, 8, 9);
+    sprites.shots[SPRITE_LEFT] = sprite_grab(24, 350, 8, 9);
+
 }
 
 int initDisplay (){
@@ -115,7 +120,8 @@ void drawDisplay(int x, int y, int type, int direction){
         al_draw_bitmap(sprite, x, y, 0);
     }
     if(type == SPRITE_SHOT){
-        al_draw_filled_circle(x, y, 2, al_map_rgb_f(1, 1, 1));
+        sprite = sprites.shots[direction];
+        al_draw_bitmap(sprite, x, y, 0);
     }
 
 }

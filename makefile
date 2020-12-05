@@ -8,7 +8,7 @@ ALLEGRO_FLAGS = $$(pkg-config allegro-5 allegro_font-5 allegro_primitives-5 alle
 all: main
 
 main: main.o states.o display.o game.o
-	gcc -o battleCity main.o states.o display.o game.o $(ALLEGRO_FLAGS) $(CFLAGS) $(LDFLAGS) -g
+	gcc -o battleCity main.o states.o display.o game.o $(ALLEGRO_FLAGS) $(CFLAGS) $(LDFLAGS) -std=gnu99 -g
 
 main.o: main.c states.h
 	gcc -c main.c -o main.o $(CFLAGS)

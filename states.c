@@ -25,7 +25,7 @@ int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
 }
 void play(){
     //instancia variaveis
-    GameObject_t tank = initGameObject(10, 10, TANK);
+    GameObject_t tank = initGameObject(10, 10, 1, 1, TANK);
     InitGame();
     int input = -1;
     int cicle = 0;
@@ -55,6 +55,7 @@ void play(){
                 for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
                     key[i] &= KEY_SEEN;
                 nextCicle(&cicle);
+                updateEnemies();
                 //movGame();
                 //colisionDetection();
                 redraw = true;
@@ -81,7 +82,7 @@ void play(){
             //desenha tank
             drawDisplay(tank.x, tank.y, tank.type, tank.direction);
             //desenha inimigos
-            for(int i = 0; i < ENEMIES_QUANT; i++){
+            for(int i = 0; i < game.enemiesSize; i++){
                 GameObject_t enemie;
                 enemie = game.enemies[i];
                 drawDisplay(enemie.x, enemie.y, enemie.type, enemie.direction);

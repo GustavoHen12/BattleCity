@@ -4,18 +4,7 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
-
-//define tamanho dos sprites(px)
-#define TANK_H 20 //(1.5, 25)
-#define TANK_W 19
-#define ENEMIES_H
-#define ENEMIES_w
-#define BLOCK_H
-#define BLOCK_W
-#define EAGLE_H
-#define EAGLE_W
-#define FLAG_H
-#define FLAG_W
+//TODO: Mover novamente para display.h
 
 enum {SPRITE_TANK, SPRITE_ENEMIES, SPRITE_BLOCK, SPRITE_EAGLE, SPRITE_FLAG, SPRITE_SHOT} sprite_type;
 
@@ -27,6 +16,8 @@ typedef struct SPRITES
 
     ALLEGRO_BITMAP* tank[4];
     ALLEGRO_BITMAP* enemies[4];
+
+    ALLEGRO_BITMAP* shots[4];
 
     ALLEGRO_BITMAP* block;
     ALLEGRO_BITMAP* eagle;
