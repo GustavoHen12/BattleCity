@@ -53,18 +53,8 @@ void InitGame(){
         game.shoots[i] = initGameObject(-10, -10, 2, 2, SHOT);
     }
 
-    //Aloca espaço para paredes do mapa
-    game.map = malloc(sizeof(Wall_t)*12);
-    testMalloc(game.shoots, "mapa");
-}
-
-void nextCicle(int *cicle){
-    // if(*cicle >= INTERVAL_GENERATE_ENEMIES){
-    //     if(game.enemiesSize < ENEMIES_QUANT){
-    //         game.enemiesSize++;
-    //     }
-    //     *cicle = 0;
-    // }
+    //Inicia mapa do Jogo
+    initMap();
 }
 
 
@@ -123,8 +113,9 @@ int colision(GameObject_t *objA, int heightA, int widhtA, GameObject_t *objB, in
 
     return 1;
 }
+
 /*
-* Para matar um objeto, ao invés de retirar seu espaço de memória
+* Para matar um objeto, ao invés de liberar seu espaço de memória
 * ele é trocado com o último da lista e retorna o novo tamanho da lista
 */
 int kill(GameObject_t *objectList, int size, int index){
@@ -157,44 +148,101 @@ int updateEnemies(){
 }
 
 // ------------ Mapa ------------
-void initMap(){
-    Wall_t *wall = &(game.map[0]);
-    
-    wall->height = 80;
-    wall->width = 44;
-    wall->x = 10;
-    wall->y = 20;
 
-    // pega o tamanho, altura e direcao da parede
-    int height = wall->height, widht = wall->width;
+/*
+* A partir das opções, cria parede
+* "height"x"widht", configura o tamanho do parede a ser criada (em blocos NÃO EM PIXELS)
+* esta parede terá como posição superior esquerdo (x, y)
+*/
+void initWall(int height, int width, int x, int y){
+    //incrementa quantidade de paredes no mapa
+    game.mapSize++;
 
-    // calcula quantos blocos serão necessarios
-    int heighBlocks = height / BLOCK_HEIGHT;
-    int widthBlocks = widht / BLOCK_WIDTH;
-    int totalBlocks = heighBlocks * widthBlocks;
+    //Cria parede:
+    //Pega ponteiro para a parede que será criada
+    Wall_t *wall = &(game.map[game.mapSize - 1]);
     
+    //converte e salva o tamanho da parede de bloco para pixels
+    wall->height = BLOCK_HEIGHT*height;
+    wall->width = BLOCK_WIDTH * width;
+    //salva a posição inicial da parede
+    wall->x = x;
+    wall->y = y;
+
+    // calcula quantos blocos serão necessarios no total e salva
+    int totalBlocks = height * width;    
     wall->quantBlock = totalBlocks;
 
-    printf(" %d %d %d\n", totalBlocks, heighBlocks, widthBlocks);
     // aloca espaço para os blocos
     wall->blocks = malloc(sizeof(GameObject_t) * totalBlocks);
     testMalloc(wall->blocks, "blocos");
 
-    // cria os blocos
-    int x = wall->x, y = wall->y;
+    // Cria os blocos da parede:
+    // é importante ressaltar que no caso dos blocos o direction
+    // será utilizado para representar a "direção" em que bloco esta na parede
+    // já que, as linhas são intercaladas, dando o efeito de uma parede real
+    int xBlock = wall->x, yBlock = wall->y, direction = 0;
     int index = 0;
-    for(int i = 0; i < heighBlocks; i++){
-        x = wall->x;
-        for(int j = 0; j < widthBlocks; j++){
-            wall->blocks[index] = initGameObject(x,y, 0, 0, BLOCK);
+    // os blocos são criados por cada linha da parede
+    for(int i = 0; i < height; i++){
+        xBlock = wall->x;
+        for(int j = 0; j < width; j++){
+            //cria um GameObject_t do tipo bloco, com posição (x, y)
+            wall->blocks[index] = initGameObject(xBlock,yBlock, 0, 0, BLOCK);
+            wall->blocks[index].direction = direction;
+            //incrementa indice e posição x
             index++;
-            x+= BLOCK_WIDTH;
+            xBlock+= BLOCK_WIDTH;
         }
-        y+=BLOCK_HEIGHT;
+        //incrementa posição y e verifica qual a direção da próxima linha
+        yBlock+=BLOCK_HEIGHT;
+        direction = direction == 0 ? 1 : 0;
     }
 }
-// ------------ Tiro ------------
 
+/*
+* As configurações do mapa são determinadas no arquivo "resources/config.txt"
+* que contém a estrutura
+* |Quant                             |
+* |altura largura posicão_x posição_y|
+* sendo Quant, a quantidade de paredes no mapa
+* e cada linha seguinte corresponde a altura, largura (ambas em blocos), 
+* posição eixo X e Y, sequêncialmente.
+*/
+void initMap(){
+    //Abre arquivo com as configurações do mapa
+    char filename[25] = "resources/config.txt"; 
+    FILE* arq;
+	arq = fopen(filename, "r");
+    if(!arq){
+        fprintf(stderr, "[ERRO]: Não foi possível abrir o arquivo %s.\n", filename);
+        exit(1);
+    }
+    
+    //Lê a quantidade de paredes que o mapa possuí
+    int quantWalls;
+    if(fscanf(arq, "%d", &quantWalls) != 1){
+            fprintf(stderr, "[ERRO INTERNO]: Erro ao ler arquivo %s, não foi possível determinar a quantidade de paredes.\n", filename);
+            exit(1);
+    }
+    //Aloca espaço para o mapa
+    game.map = malloc(sizeof(Wall_t)*quantWalls);
+    testMalloc(game.shoots, "paredes, mapa");
+
+    //Cria as paredes do mapa
+    int height, width, x, y;
+    for(int i = 0; i < quantWalls; i++){
+        //Lễ as configurações das paredes
+        if(fscanf(arq, "%d %d %d %d", &height, &width, &x, &y) != 4){
+            fprintf(stderr, "[ERRO INTERNO]: Erro ao ler arquivo %s, número de entradas inválido.\n", filename);
+            exit(1);
+        }
+        //Cria as paredes
+        initWall(height, width, x, y);
+    }
+}
+
+// ------------ Tiro ------------
 void shoot(GameObject_t *shooter){
     //TODO: Arrumar posição inicial dos tiros
     //TODO: Verificar se já não existe um tiro em jogo

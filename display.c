@@ -29,10 +29,6 @@ int initConf () {
     screen = al_create_display( DISPLAY_WIDHT,DISPLAY_HEIGH);
     check(screen, "display");
 
-    //Inicia o buffer da tela
-    buffer = al_create_bitmap(BUFFER_WIDHT, BUFFER_HEIGHT);
-    check(buffer, "bitmap buffer");
-
     //Inicia font
     font = al_create_builtin_font();
     check(font, "fonte");
@@ -64,10 +60,10 @@ ALLEGRO_BITMAP* sprite_grab(int x, int y, int w, int h)
     return sprite;
 }
 
-
 void initSprites()
 {
-    sprites._sheet = al_load_bitmap("assets/spritesheet_battleCity.png");
+    //sprites._sheet = al_load_bitmap("resources/spritesheet_battleCity.png");
+    sprites._sheet = al_load_bitmap("resources/sprite.bmp");
     check(sprites._sheet, "spritesheet");
 
     sprites.tank[SPRITE_UP] = sprite_grab(2, 2, 30, 30);
@@ -89,7 +85,8 @@ void initSprites()
     sprites.explosion[1] = sprite_grab(290, 64, 32, 45);
     sprites.explosion[2] = sprite_grab(320, 64, 45, 45);
     
-    sprites.block = sprite_grab(90, 264, BLOCK_W, BLOCK_H);
+    sprites.block[0] = sprite_grab(96, 264, 16, BLOCK_H);
+    sprites.block[1] = sprite_grab(184, 264, 16, BLOCK_H);
 }
 
 int initDisplay (){
@@ -107,12 +104,6 @@ void startFPS(){
     al_start_timer(timer);
 }
 
-void beforeDraw(){
-    al_set_target_bitmap(buffer);
-    al_clear_to_color(al_map_rgb(0, 0, 0));
-    // al_draw_textf(font, al_map_rgb(255, 255, 255), 0, 0, 0, "X: %d Y: %d", x, y);
-}
-
 void drawDisplay(int x, int y, int type, int direction){
     //desenha o sprite "sprite" na tela na posicação (x, y)
     ALLEGRO_BITMAP* sprite;
@@ -126,16 +117,17 @@ void drawDisplay(int x, int y, int type, int direction){
         sprite = sprites.shots[direction];
     }
     if(type == SPRITE_BLOCK){
-        sprite = sprites.block;
+        sprite = sprites.block[direction];
     }
 
     al_draw_bitmap(sprite, x, y, 0);
 }
 
-void showDraw(){
-    al_set_target_backbuffer(screen);
-    al_draw_scaled_bitmap(buffer, 0, 0, BUFFER_WIDHT, BUFFER_HEIGHT, 0, 0, DISPLAY_WIDHT, DISPLAY_HEIGH, 0);
+void beforeDraw(){
+    al_clear_to_color(al_map_rgb(0, 0, 0));
+}
 
+void showDraw(){
     al_flip_display();
 }
 

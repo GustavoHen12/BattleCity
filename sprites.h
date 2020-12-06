@@ -41,7 +41,7 @@ typedef struct SPRITES
 
     ALLEGRO_BITMAP* explosion[4];
 
-    ALLEGRO_BITMAP* block;
+    ALLEGRO_BITMAP* block[2];
     ALLEGRO_BITMAP* eagle;
     ALLEGRO_BITMAP* flag;
 } SPRITES;

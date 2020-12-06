@@ -9,7 +9,7 @@
 #define INTERVAL_GENERATE_ENEMIES 180
 #define ENEMIES_QUANT 4
 
-#define BLOCK_WIDTH 22
+#define BLOCK_WIDTH 16
 #define BLOCK_HEIGHT 8
 
 typedef struct{

@@ -82,8 +82,8 @@ void play(){
             break;
         
         if(redraw && al_is_event_queue_empty(queue)){
-            beforeDraw();
             // //desenha tank
+            beforeDraw();
             // drawDisplay(tank.x, tank.y, tank.type, tank.direction);
             // //desenha inimigos
             // for(int i = 0; i < game.enemiesSize; i++){
@@ -97,13 +97,12 @@ void play(){
             //     shot = game.shoots[i];
             //     drawDisplay(shot.x, shot.y, shot.type, shot.direction);
             // }
-            drawDisplay(100, 100, SPRITE_BLOCK, 0);
+            drawDisplay(100, 100, SPRITE_BLOCK, 1);
             Wall_t wall = game.map[0];
             for(int i = 0; i < wall.quantBlock; i++){
                 GameObject_t block;
                 block = wall.blocks[i];
-                printf("%d ->  %d %d %d\n", i, block.x, block.y, block.type);
-                drawDisplay(block.x, block.y, block.type, 0);
+                drawDisplay(block.x, block.y, block.type, block.direction);
             }
             //desenha efeitos
             fx_draw();
