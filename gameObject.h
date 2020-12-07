@@ -1,7 +1,11 @@
-//todo: não sei se isso vai funcionar
-enum {TANK, ENEMIES, BLOCK, EAGLE, FLAG, SHOT} type_obj;
+#ifndef __GAME_OBJECT__
+#define __GAME_OBJECT__
 
-enum {UP, DOWN, LEFT, RIGHT} directions;
+#include <stdio.h> //TODO: VERIFICAR SE DA PRA TIRAR ISSO
+
+enum type_obj {TANK, ENEMIES, BLOCK, EAGLE, FLAG, SHOT};
+
+enum directions {UP, DOWN, LEFT, RIGHT};
 
 typedef struct {
     //posicao
@@ -14,4 +18,15 @@ typedef struct {
     int life;
     //direção
     int direction;
+    //tamanho
+    int height, widht;
 } GameObject_t;
+
+
+void setPosition(GameObject_t *objeto, int x, int y);
+
+GameObject_t initGameObject(int x, int y, int dx, int dy, int type);
+
+void move(GameObject_t *object, int direction);
+
+#endif

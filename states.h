@@ -1,3 +1,6 @@
+#ifndef __STATES__
+#define __STATES__
+
 #include <stdio.h>
 
 #include "game.h"
@@ -19,3 +22,5 @@ void init_stage();
 * Configurações iniciais de tela, exibe menu
 */
 void start();
+
+#endif

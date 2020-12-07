@@ -2,13 +2,14 @@
  
 CFLAGS = -Wall
 LDFLAGS = -lm
-
+DEBUG_FLAGS = -g
+COMPILER = -std=gnu99
 ALLEGRO_FLAGS = $$(pkg-config allegro-5 allegro_font-5 allegro_primitives-5 allegro_audio-5 allegro_acodec-5 allegro_image-5 --libs --cflags)
 
 all: main
 
-main: main.o states.o display.o game.o
-	gcc -o battleCity main.o states.o display.o game.o $(ALLEGRO_FLAGS) $(CFLAGS) $(LDFLAGS) -std=gnu99 -g
+main: main.o states.o display.o game.o gameObject.o 
+	gcc -o battleCity main.o states.o display.o game.o gameObject.o $(ALLEGRO_FLAGS) $(CFLAGS) $(LDFLAGS) $(COMPILER) $(DEBUG_FLAGS)
 
 main.o: main.c states.h
 	gcc -c main.c -o main.o $(CFLAGS)
@@ -16,11 +17,14 @@ main.o: main.c states.h
 states.o: states.c states.h display.h game.h
 	gcc -c states.c $(CFLAGS)
 
-display.o: display.c display.h
+display.o: display.c display.h gameObject.h
 	gcc -c display.c $(CFLAGS) $(ALLEGRO_FLAGS)
 
-game.o: game.c game.h
+game.o: game.c game.h gameObject.h
 	gcc -c game.c $(CFLAGS)
+
+gameObject.o: gameObject.c gameObject.h
+	gcc -c gameObject.c $(CFLAGS)
 
 clean:
 	-rm -f *~ *.o

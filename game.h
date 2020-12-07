@@ -1,3 +1,6 @@
+#ifndef __GAME__
+#define __GAME__
+
 //LOGICA DO JOGO
 #include<stdio.h>
 #include<stdlib.h>
@@ -18,15 +21,15 @@ typedef struct{
 } Wall_t;
 
 typedef struct{
-    //TODO: Renomear size = quant(?)
+    GameObject_t tank;
     Wall_t *map;
-    int mapSize;
+    int mapQuant;
 
     GameObject_t *enemies;
-    int enemiesSize;
+    int enemiesQuant;
 
-    GameObject_t *shoots;
-    int shootsSize;
+    GameObject_t *shots;
+    int shotsQuant;
 
     GameObject_t eagle;
 } Game_t;
@@ -40,6 +43,7 @@ void InitGame();
 
 //movimenta tanque
 void move(GameObject_t *tank, int direction);
+void updateTank(int direction);
 
 //movimenta jogo
 void nextCicle(int *cicle);
@@ -54,3 +58,5 @@ void updateShot();
 int updateEnemies();
 
 void initMap();
+
+#endif

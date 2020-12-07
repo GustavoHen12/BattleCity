@@ -25,7 +25,6 @@ int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
 }
 void play(){
     //instancia variaveis
-    GameObject_t tank = initGameObject(10, 10, 1, 1, TANK);
     InitGame();
     int input = -1;
     int cicle = 0;
@@ -36,7 +35,6 @@ void play(){
     unsigned char key[ALLEGRO_KEY_MAX];
     memset(key, 0, sizeof(key));
     fx_init();
-    initMap();
     startFPS();
     while(1){
         al_wait_for_event(queue, &event);
@@ -45,14 +43,14 @@ void play(){
             case ALLEGRO_EVENT_TIMER:
                 //movimenta tank
                 input = readInput(key);
-                if(input != -1) move(&tank, input);
+                updateTank(input);
                 //atira
-                if(key[ALLEGRO_KEY_Z]) shoot(&tank);
+                if(key[ALLEGRO_KEY_Z]) shoot(&game.tank);
 
-                updateShot();
+                //updateShot();
 
                 if(updateEnemies()){
-                    fx_add(game.shoots[0].x + 5, game.shoots[0].y + 5); //TODO: Arrumar posição explosão
+                    fx_add(game.shots[0].x + 5, game.shots[0].y + 5); //TODO: Arrumar posição explosão
                 }
 
                 fx_update();
@@ -84,25 +82,26 @@ void play(){
         if(redraw && al_is_event_queue_empty(queue)){
             // //desenha tank
             beforeDraw();
-            // drawDisplay(tank.x, tank.y, tank.type, tank.direction);
-            // //desenha inimigos
+            drawDisplay(game.tank.x, game.tank.y, game.tank.type, game.tank.direction);
+            //desenha inimigos
             // for(int i = 0; i < game.enemiesSize; i++){
             //     GameObject_t enemie;
             //     enemie = game.enemies[i];
             //     drawDisplay(enemie.x, enemie.y, enemie.type, enemie.direction);
             // }
-            // //desenha tiro
-            // for(int i = 0; i < game.shootsSize; i++){
-            //     GameObject_t shot;
-            //     shot = game.shoots[i];
-            //     drawDisplay(shot.x, shot.y, shot.type, shot.direction);
-            // }
-            drawDisplay(100, 100, SPRITE_BLOCK, 1);
-            Wall_t wall = game.map[0];
-            for(int i = 0; i < wall.quantBlock; i++){
-                GameObject_t block;
-                block = wall.blocks[i];
-                drawDisplay(block.x, block.y, block.type, block.direction);
+            //desenha tiro
+            for(int i = 0; i < game.shotsQuant; i++){
+                GameObject_t shot;
+                shot = game.shots[i];
+                drawDisplay(shot.x, shot.y, shot.type, shot.direction);
+            }
+            for(int i = 0; i < game.mapQuant; i++){
+                Wall_t wall = game.map[i];
+                for(int j = 0; j < wall.quantBlock; j++){
+                    GameObject_t block;
+                    block = wall.blocks[j];
+                    drawDisplay(block.x, block.y, block.type, block.direction);
+                }
             }
             //desenha efeitos
             fx_draw();

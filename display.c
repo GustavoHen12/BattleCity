@@ -107,16 +107,16 @@ void startFPS(){
 void drawDisplay(int x, int y, int type, int direction){
     //desenha o sprite "sprite" na tela na posicação (x, y)
     ALLEGRO_BITMAP* sprite;
-    if(type == SPRITE_TANK){
+    if(type == TANK){
         sprite = sprites.tank[direction];
     }
-    if(type == SPRITE_ENEMIES){
+    if(type == ENEMIES){
         sprite = sprites.enemies[direction];
     }
-    if(type == SPRITE_SHOT){
+    if(type == SHOT){
         sprite = sprites.shots[direction];
     }
-    if(type == SPRITE_BLOCK){
+    if(type == BLOCK){
         sprite = sprites.block[direction];
     }
 
