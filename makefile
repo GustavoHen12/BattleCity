@@ -8,8 +8,8 @@ ALLEGRO_FLAGS = $$(pkg-config allegro-5 allegro_font-5 allegro_primitives-5 alle
 
 all: main
 
-main: main.o states.o display.o game.o gameObject.o 
-	gcc -o battleCity main.o states.o display.o game.o gameObject.o $(ALLEGRO_FLAGS) $(CFLAGS) $(LDFLAGS) $(COMPILER) $(DEBUG_FLAGS)
+main: main.o states.o display.o game.o 
+	gcc -o battleCity main.o states.o display.o game.o $(ALLEGRO_FLAGS) $(CFLAGS) $(LDFLAGS) $(COMPILER) $(DEBUG_FLAGS)
 
 main.o: main.c states.h
 	gcc -c main.c -o main.o $(CFLAGS)
@@ -22,9 +22,6 @@ display.o: display.c display.h gameObject.h
 
 game.o: game.c game.h gameObject.h
 	gcc -c game.c $(CFLAGS)
-
-gameObject.o: gameObject.c gameObject.h
-	gcc -c gameObject.c $(CFLAGS)
 
 clean:
 	-rm -f *~ *.o

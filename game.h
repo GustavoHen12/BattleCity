@@ -5,12 +5,13 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<time.h>
 
 #include"gameObject.h"
 
 #define MAX_SHOOT_SIZE 200
 #define INTERVAL_GENERATE_ENEMIES 180
-#define ENEMIES_QUANT 4
+#define ENEMIES_QUANT 1
 
 #define BLOCK_WIDTH 16
 #define BLOCK_HEIGHT 8

@@ -47,7 +47,7 @@ void play(){
                 //atira
                 if(key[ALLEGRO_KEY_Z]) shoot(&game.tank);
 
-                //updateShot();
+                updateShot();
 
                 if(updateEnemies()){
                     fx_add(game.shots[0].x + 5, game.shots[0].y + 5); //TODO: Arrumar posição explosão
@@ -84,11 +84,11 @@ void play(){
             beforeDraw();
             drawDisplay(game.tank.x, game.tank.y, game.tank.type, game.tank.direction);
             //desenha inimigos
-            // for(int i = 0; i < game.enemiesSize; i++){
-            //     GameObject_t enemie;
-            //     enemie = game.enemies[i];
-            //     drawDisplay(enemie.x, enemie.y, enemie.type, enemie.direction);
-            // }
+            for(int i = 0; i < game.enemiesQuant; i++){
+                GameObject_t enemie;
+                enemie = game.enemies[i];
+                drawDisplay(enemie.x, enemie.y, enemie.type, enemie.direction);
+            }
             //desenha tiro
             for(int i = 0; i < game.shotsQuant; i++){
                 GameObject_t shot;

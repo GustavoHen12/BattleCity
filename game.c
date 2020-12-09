@@ -1,5 +1,4 @@
 #include"game.h"
-
 // ------------ Testes e funções auxiliares ------------
 
 void testMalloc(GameObject_t *obj, char *msg){
@@ -7,6 +6,28 @@ void testMalloc(GameObject_t *obj, char *msg){
         fprintf(stderr, "[ERRO INTERNO]: Não foi possível alocar espaço para %s\n", msg);
         exit(1);
     }
+}
+// -----------
+
+void setPosition(GameObject_t *objeto, int x, int y){
+    objeto->x = x;
+    objeto->y = y;
+}
+
+GameObject_t initGameObject(int x, int y, int dx, int dy, int type){
+    GameObject_t obj;
+    //seta tipo
+    obj.type = type;
+
+    //seta posicão inicial
+    setPosition(&obj, x, y);
+    
+    //velocidade inicial
+    obj.dx = dx;
+    obj.dy = dy;
+    obj.direction = UP;
+
+    return obj;
 }
 
 // ------------ Funções jogo genéricas ------------
@@ -22,7 +43,8 @@ void InitGame(){
     game.enemiesQuant = ENEMIES_QUANT;
     //configura posições iniciais
     for(int i = 0; i < ENEMIES_QUANT; i++){
-        game.enemies[i] = initGameObject(30*(i + 1), 30*(i+1), 0, 0, ENEMIES);
+        game.enemies[i] = initGameObject(3, 3, 2, 2, ENEMIES);
+        game.enemies[i].direction = DOWN;
     }
 
     //Aloca espaço para tiros
@@ -37,6 +59,8 @@ void InitGame(){
 
     //Inicia mapa do Jogo
     initMap();
+
+    srand(time(NULL));
 }
 
 int colision(int xA, int yA, int heightA, int widhtA, int xB, int yB, int heightB, int widthB){
@@ -64,27 +88,90 @@ int kill(GameObject_t *objectList, int size, int index){
     return size - 1;
 }
 /*
+* Esta função recebe um objeto e uma direção, e atualiza a
+* direção e a velocidade do objeto
+*/
+void updateDirection(GameObject_t *object, int newDirection){
+    switch (newDirection)
+    {
+    case UP:
+        if(object->dy > 0)
+            object->dy *= -1;
+        object->direction = UP;
+        break;
+    case DOWN:
+        if(object->dy < 0)
+            object->dy *= -1;
+        object->direction = DOWN;
+        break;
+    case LEFT:
+        if(object->dx > 0)
+            object->dx *= -1;
+        object->direction = LEFT;
+        break;
+    case RIGHT:
+        if(object->dx < 0)
+            object->dx *= -1;
+        object->direction = RIGHT;
+        break;
+    default:
+        break;
+    }
+}
+
+/*
+* Faz a movimentação de um "object" para uma direction
+* É importante ressaltar que esta função atualiza a direção
+* alterando a velocidade e, obviemente, a posição do objeto
+*/
+void move(GameObject_t *object, int direction){
+    //Verifica a posição atual
+    int newPositionX, newPositionY;
+    newPositionX = object->x;
+    newPositionY = object->y;
+    //Altera a direção e a velocidade do objeto
+    updateDirection(object, direction); 
+    //Calcula a nova posição
+    if(direction == UP || direction == DOWN)
+        newPositionY = object->y + object->dy;
+    else 
+        newPositionX = object->x + object->dx;
+    //Atualiza posição do objeto
+    setPosition(object, newPositionX, newPositionY);
+}
+
+/*
 * verifica se a posição para qual o objeto pretende ir já esta ocupada
 */
 int positionEnable(int posX, int posY, int height, int widht){
+    // #define DISPLAY_HEIGH 500
+    // #define DISPLAY_WIDHT 650   
+    //verifica se esta dentro do campo
+    if(posX < 0)
+        return 0;
+    if(posX+widht > 650)
+        return 0;
+    if(posY < 0)
+        return 0;
+    if(posY + height > 500)
+        return 0;
+
     //verifica se esta dentro de alguma parede
     for(int i = 0; i < game.mapQuant; i++){
         Wall_t wall = game.map[i];
         if(colision(posX, posY, height, widht, wall.x, wall.y, wall.height, wall.width)){
             for(int j = 0; j < wall.quantBlock; j++){
-                printf("colisão: %d %d %d %d %d %d %d %d \n", posX, posY, height, widht, wall.x, wall.y, wall.height, wall.width);
-                return 0;
-                // GameObject_t block;
-                // block = wall.blocks[j];
-                // if(colision(posX, posY, height, widht, block.x, block.y, 8, 22)){
-                //     
-                //     return 0;   
-                // }
+                GameObject_t block;
+                block = wall.blocks[j];
+                if(colision(posX, posY, height, widht, block.x, block.y, 8, 22)){
+                    return 0;   
+                }
             }
         }
     }
     return 1;
 }
+
 // ------------ Tank ------------
 void updateTank(int direction){
     if(direction != -1){
@@ -112,7 +199,6 @@ void updateTank(int direction){
             break;
         }
         if(positionEnable(newX, newY, 28, 28) != 0){
-            printf(" * ");
             move(&game.tank, direction);
         }
     }
@@ -121,10 +207,30 @@ void updateTank(int direction){
 // ------------ Inimigos ------------
 
 int updateEnemies(){
-    //TODO: Movimenta
-    // verifica se colidiu com tiro
-    GameObject_t shot = game.shots[game.shotsQuant - 1];
+    //---- Movimenta
     int i = 0;
+    while(i < game.enemiesQuant){
+        GameObject_t enemie;
+        enemie = game.enemies[i];
+        int newX = enemie.x, newY = enemie.y;
+        if(enemie.direction == UP || enemie.direction == DOWN)
+            newY += enemie.dy;
+        else 
+            newX += enemie.dx;
+        //verifica se o tank pode continuar indo na mesma direção
+        if(positionEnable(newX, newY, 28, 28) != 0){
+            move(&(game.enemies[i]), enemie.direction);
+        }else{
+            //caso não possa altera direção
+            enemie.direction = rand() % 4;
+            updateDirection(&(game.enemies[i]), enemie.direction);
+        }
+        i++;
+    }
+
+    //---- Verifica colisão
+    GameObject_t shot = game.shots[game.shotsQuant - 1];
+    i = 0;
     while(i < game.enemiesQuant){
         GameObject_t enemie;
         enemie = game.enemies[i];
@@ -135,6 +241,8 @@ int updateEnemies(){
             i++;
         }
     }
+
+    //---- Atira
     return 0;
 }
 
