@@ -1,11 +1,6 @@
 #include "states.h"
 
-void initGame(){
-    initDisplay();
-}
-
 void start(){
-    initGame();
     state = INIT_STAGE;
 }
 
@@ -26,6 +21,8 @@ int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
 void play(){
     //instancia variaveis
     InitGame();
+    initDisplay();
+   
     int input = -1;
     int cicle = 0;
     //laço principal
@@ -47,12 +44,13 @@ void play(){
                 //atira
                 if(key[ALLEGRO_KEY_Z]) shoot(&game.tank);
 
-                updateShot();
+                //updateShot();
 
                 if(updateEnemies()){
                     fx_add(game.shots[0].x + 5, game.shots[0].y + 5); //TODO: Arrumar posição explosão
                 }
 
+                //TODO: UPDATE MAP
                 fx_update();
                 
                 for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
@@ -82,25 +80,21 @@ void play(){
         if(redraw && al_is_event_queue_empty(queue)){
             // //desenha tank
             beforeDraw();
-            drawDisplay(game.tank.x, game.tank.y, game.tank.type, game.tank.direction);
+            //drawDisplay(game.tank.x, game.tank.y, game.tank.type, game.tank.direction);
+            drawDisplay(&game.tank);
             //desenha inimigos
             for(int i = 0; i < game.enemiesQuant; i++){
-                GameObject_t enemie;
-                enemie = game.enemies[i];
-                drawDisplay(enemie.x, enemie.y, enemie.type, enemie.direction);
+                drawDisplay(&(game.enemies[i]));
             }
             //desenha tiro
             for(int i = 0; i < game.shotsQuant; i++){
-                GameObject_t shot;
-                shot = game.shots[i];
-                drawDisplay(shot.x, shot.y, shot.type, shot.direction);
+                drawDisplay(&game.shots[i]);
             }
+            //desenha mapa
             for(int i = 0; i < game.mapQuant; i++){
                 Wall_t wall = game.map[i];
                 for(int j = 0; j < wall.quantBlock; j++){
-                    GameObject_t block;
-                    block = wall.blocks[j];
-                    drawDisplay(block.x, block.y, block.type, block.direction);
+                    drawDisplay(&wall.blocks[j]);
                 }
             }
             //desenha efeitos

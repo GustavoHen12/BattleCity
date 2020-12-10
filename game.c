@@ -14,7 +14,7 @@ void setPosition(GameObject_t *objeto, int x, int y){
     objeto->y = y;
 }
 
-GameObject_t initGameObject(int x, int y, int dx, int dy, int type){
+GameObject_t initGameObject(int x, int y, int dx, int dy, int type, int heigh, int widht){
     GameObject_t obj;
     //seta tipo
     obj.type = type;
@@ -27,13 +27,17 @@ GameObject_t initGameObject(int x, int y, int dx, int dy, int type){
     obj.dy = dy;
     obj.direction = UP;
 
+    //tamanho
+    obj.height = heigh;
+    obj.widht = widht;
+
     return obj;
 }
 
 // ------------ Funções jogo genéricas ------------
 
 void InitGame(){
-    game.tank = initGameObject(0, 0, 1, 1, TANK);
+    game.tank = initGameObject(0, 0, 1, 1, TANK, TANK_H, TANK_W);
     testMalloc(&(game.tank), "tank");
 
     //Aloca espaco para os inimigos e testa
@@ -43,8 +47,8 @@ void InitGame(){
     game.enemiesQuant = ENEMIES_QUANT;
     //configura posições iniciais
     for(int i = 0; i < ENEMIES_QUANT; i++){
-        game.enemies[i] = initGameObject(3, 3, 2, 2, ENEMIES);
-        game.enemies[i].direction = DOWN;
+        game.enemies[i] = initGameObject(3, 3, 4, 4, ENEMIES, ENEMIES_H, ENEMIES_W);
+        game.enemies[i].direction = LEFT;
     }
 
     //Aloca espaço para tiros
@@ -54,7 +58,7 @@ void InitGame(){
     game.shotsQuant = 1;
     //coloca o tiro fora do campo
     for(int i = 0; i < game.shotsQuant; i++){
-        game.shots[i] = initGameObject(-10, -10, 2, 2, SHOT);
+        game.shots[i] = initGameObject(-10, -10, 2, 2, SHOT, SHOT_H, SHOT_W);
     }
 
     //Inicia mapa do Jogo
@@ -287,7 +291,7 @@ void initWall(int height, int width, int x, int y){
         xBlock = wall->x;
         for(int j = 0; j < width; j++){
             //cria um GameObject_t do tipo bloco, com posição (x, y)
-            wall->blocks[index] = initGameObject(xBlock,yBlock, 0, 0, BLOCK);
+            wall->blocks[index] = initGameObject(xBlock,yBlock, 0, 0, BLOCK, 0, 0);
             wall->blocks[index].direction = direction;
             //incrementa indice e posição x
             index++;
@@ -346,19 +350,20 @@ void initMap(){
 
 // ------------ Tiro ------------
 void shoot(GameObject_t *shooter){
-    //TODO: Arrumar posição inicial dos tiros
     //TODO: Verificar se já não existe um tiro em jogo
-    //TODO: Verificar colisão com paredes
     GameObject_t *shot;
     shot = &(game.shots[game.shotsQuant - 1]);
+    int positionOffsetY = shot->height/2;
+    int positionOffsetX = shot->widht/2;
+    int offset = 2;
     if(shooter->direction == UP)
-        setPosition(shot, shooter->x + 10, shooter->y - 4);
+        setPosition(shot, shooter->x+(shooter->widht/2)-positionOffsetX, shooter->y-offset-shot->height);
     if(shooter->direction == DOWN)
-        setPosition(shot, shooter->x + 10, shooter->y + 28);
+        setPosition(shot, shooter->x+(shooter->widht/2)-positionOffsetX, shooter->y+shooter->height+offset);
     if(shooter->direction == LEFT)
-        setPosition(shot, shooter->x + 1, shooter->y + 17);
+        setPosition(shot, shooter->x-shot->widht-offset, shooter->y+(shooter->height/2)-positionOffsetY);
     if(shooter->direction == RIGHT)
-        setPosition(shot, shooter->x + 30, shooter->y + 15);
+        setPosition(shot, shooter->x+(shooter->widht+offset), shooter->y+(shooter->height/2)-positionOffsetX);
     
     shot->direction = shooter->direction;
 }

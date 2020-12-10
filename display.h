@@ -12,11 +12,6 @@
 
 // ------------ Sprites ------------
 //define tamanho dos sprites(px)
-#define TANK_H 30
-#define TANK_W 30
-
-#define ENEMIES_H 
-#define ENEMIES_w
 
 #define BLOCK_H 8
 #define BLOCK_W 22
@@ -26,9 +21,6 @@
 
 #define FLAG_H
 #define FLAG_W
-
-#define SHOT_H 9
-#define SHOT_W 8
 
 #define EXPLOSION_FRAMES 3
 
@@ -108,7 +100,7 @@ void beforeDraw();
 /*
 * desenha um sprite na tela, nas posições (x, y)
 */
-void drawDisplay(int x, int y, int type, int direction);
+void drawDisplay(GameObject_t *obj);
 
 /*
 * Exibe as imagens que foram desenhadas na tela
@@ -125,4 +117,8 @@ void closeDisplay();
 */
 void spritesInit();
 
+/*
+
+*/
+void testaSprite( GameObject_t *obj );
 #endif

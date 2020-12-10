@@ -66,20 +66,20 @@ void initSprites()
     sprites._sheet = al_load_bitmap("resources/sprite.bmp");
     check(sprites._sheet, "spritesheet");
 
-    sprites.tank[SPRITE_UP] = sprite_grab(2, 2, 30, 30);
-    sprites.tank[SPRITE_RIGHT] = sprite_grab(2, 33, 30, 30);
-    sprites.tank[SPRITE_DOWN] = sprite_grab(2, 64, 30, 30);
-    sprites.tank[SPRITE_LEFT] = sprite_grab(2, 95, 30, 30);
+    sprites.tank[SPRITE_UP] = sprite_grab(2, 2, TANK_W, TANK_H);
+    sprites.tank[SPRITE_RIGHT] = sprite_grab(2, 34, TANK_W, TANK_H);
+    sprites.tank[SPRITE_DOWN] = sprite_grab(2, 65, TANK_W, TANK_H);
+    sprites.tank[SPRITE_LEFT] = sprite_grab(2, 98, TANK_W, TANK_H);
 
-    sprites.enemies[SPRITE_UP] = sprite_grab(2, 126, 30, 32);
-    sprites.enemies[SPRITE_RIGHT] = sprite_grab(2, 157, 30, 32);
-    sprites.enemies[SPRITE_DOWN] = sprite_grab(2, 188, 30, 32);
-    sprites.enemies[SPRITE_LEFT] = sprite_grab(2, 219, 30, 32);
+    sprites.enemies[SPRITE_UP] = sprite_grab(2, 426, ENEMIES_W, ENEMIES_H);
+    sprites.enemies[SPRITE_RIGHT] = sprite_grab(2, 459, ENEMIES_W, ENEMIES_H);
+    sprites.enemies[SPRITE_DOWN] = sprite_grab(2, 489, ENEMIES_W, ENEMIES_H);
+    sprites.enemies[SPRITE_LEFT] = sprite_grab(2, 522, ENEMIES_W, ENEMIES_H);
 
-    sprites.shots[SPRITE_UP] = sprite_grab(0, 350, 8, 9);
-    sprites.shots[SPRITE_RIGHT] = sprite_grab(8, 350, 8, 9);
-    sprites.shots[SPRITE_DOWN] = sprite_grab(16, 350, 8, 9);
-    sprites.shots[SPRITE_LEFT] = sprite_grab(24, 350, 8, 9);
+    sprites.shots[SPRITE_UP] = sprite_grab(0, 350, SHOT_W, SHOT_H);
+    sprites.shots[SPRITE_RIGHT] = sprite_grab(8, 352, SHOT_W, SHOT_H);
+    sprites.shots[SPRITE_DOWN] = sprite_grab(16, 350, SHOT_W, SHOT_H);
+    sprites.shots[SPRITE_LEFT] = sprite_grab(24, 352, SHOT_W, SHOT_H);
 
     sprites.explosion[0] = sprite_grab(255, 64, 32, 35);
     sprites.explosion[1] = sprite_grab(290, 64, 32, 45);
@@ -104,7 +104,10 @@ void startFPS(){
     al_start_timer(timer);
 }
 
-void drawDisplay(int x, int y, int type, int direction){
+void drawDisplay (GameObject_t *obj){
+    int type = obj->type;
+    int direction = obj->direction;
+    int x = obj->x, y = obj->y;
     //desenha o sprite "sprite" na tela na posicação (x, y)
     ALLEGRO_BITMAP* sprite;
     if(type == TANK){
@@ -121,6 +124,32 @@ void drawDisplay(int x, int y, int type, int direction){
     }
 
     al_draw_bitmap(sprite, x, y, 0);
+}
+
+void testaSprite(GameObject_t *obj){
+    int type = obj->type;
+    int direction = obj->direction;
+    int x = obj->x, y = obj->y;
+    //desenha o sprite "sprite" na tela na posicação (x, y)
+    ALLEGRO_BITMAP* sprite;
+    if(type == TANK){
+        sprite = sprites.tank[direction];
+    }
+    if(type == ENEMIES){
+        sprite = sprites.enemies[direction];
+    }
+    if(type == SHOT){
+        sprite = sprites.shots[direction];
+    }
+    if(type == BLOCK){
+        sprite = sprites.block[direction];
+    }
+
+    al_draw_bitmap(sprite, x, y, 0);
+    al_draw_line(x, y, x, y+obj->height, al_map_rgb_f(1, 1, 0), 1);
+    al_draw_line(x, y, x+obj->widht, y, al_map_rgb_f(1, 1, 0), 1);
+    al_draw_line(x, y+obj->height, x+obj->widht, y+obj->height, al_map_rgb_f(1, 1, 0), 1);
+    al_draw_line(x+obj->widht, y, x+obj->widht, y+obj->height, al_map_rgb_f(1, 1, 0), 1);
 }
 
 void beforeDraw(){

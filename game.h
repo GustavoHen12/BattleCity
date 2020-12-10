@@ -38,7 +38,7 @@ typedef struct{
 Game_t game;
 
 //inicia
-GameObject_t initGameObject(int x, int y, int dx, int dy, int type);
+GameObject_t initGameObject(int x, int y, int dx, int dy, int type, int heigh, int widht);
 
 void InitGame();
 

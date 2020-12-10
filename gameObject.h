@@ -1,9 +1,16 @@
 #ifndef __GAME_OBJECT__
 #define __GAME_OBJECT__
 
-#include <stdio.h> //TODO: VERIFICAR SE DA PRA TIRAR ISSO
+#define ENEMIES_H 28
+#define ENEMIES_W 30
 
-enum type_obj {TANK, ENEMIES, BLOCK, EAGLE, FLAG, SHOT};
+#define TANK_H 28
+#define TANK_W 28
+
+#define SHOT_H 9
+#define SHOT_W 8
+
+enum type_obj {TANK, ENEMIES, BLOCK, EAGLE, FLAG, SHOT, ENEMIE_SHOT};
 
 enum directions {UP, DOWN, LEFT, RIGHT};
 
@@ -21,12 +28,5 @@ typedef struct {
     //tamanho
     int height, widht;
 } GameObject_t;
-
-
-void setPosition(GameObject_t *objeto, int x, int y);
-
-GameObject_t initGameObject(int x, int y, int dx, int dy, int type);
-
-void move(GameObject_t *object, int direction);
 
 #endif
