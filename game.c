@@ -7,6 +7,11 @@ void testMalloc(GameObject_t *obj, char *msg){
         exit(1);
     }
 }
+
+void printObject(GameObject_t *obj){
+    printf("x: %d, y: %d, dx: %d, dy: %d, type: %d, heigh: %d, widht: %d, life: %d \n",
+    obj->x, obj->y, obj->dx, obj->dy, obj->type, obj->height, obj->widht, obj->life);
+}
 // -----------
 
 void setPosition(GameObject_t *objeto, int x, int y){
@@ -25,18 +30,32 @@ GameObject_t initGameObject(int x, int y, int dx, int dy, int type, int heigh, i
     //velocidade inicial
     obj.dx = dx;
     obj.dy = dy;
-    obj.direction = UP;
 
     //tamanho
     obj.height = heigh;
     obj.widht = widht;
 
+    //Configurações automaticas
+    obj.life = 1;
+    obj.direction = DOWN;
+
     return obj;
+}
+
+int isAlive(GameObject_t *obj){
+    return obj->life > 0;
+}
+
+void getMiddlePosition(GameObject_t *obj, int index, int *x, int *y){
+    GameObject_t *object = &obj[index];
+    *x = object->x + (object->widht/2);
+    *y = object->y + (object->height/2);
 }
 
 // ------------ Funções jogo genéricas ------------
 
 void InitGame(){
+    //INICIA TANK
     game.tank = initGameObject(0, 0, 1, 1, TANK, TANK_H, TANK_W);
     testMalloc(&(game.tank), "tank");
 
@@ -48,24 +67,49 @@ void InitGame(){
     //configura posições iniciais
     for(int i = 0; i < ENEMIES_QUANT; i++){
         game.enemies[i] = initGameObject(3, 3, 4, 4, ENEMIES, ENEMIES_H, ENEMIES_W);
-        game.enemies[i].direction = LEFT;
+        //game.enemies[i].life = 0;
     }
 
     //Aloca espaço para tiros
-    game.shots = malloc(sizeof(GameObject_t)*2);
+    game.shotsQuant = 5;
+    game.shots = malloc(sizeof(GameObject_t)*game.shotsQuant);
     testMalloc(game.shots, "tiros");
-    //só pode haver 1 tiro do tank em jogo
-    game.shotsQuant = 1;
-    //coloca o tiro fora do campo
+    //Inicia os tiros que pertence ao inimigo
     for(int i = 0; i < game.shotsQuant; i++){
-        game.shots[i] = initGameObject(-10, -10, 2, 2, SHOT, SHOT_H, SHOT_W);
+        game.shots[i] = initGameObject(0, 0, 2, 2, ENEMIE_SHOT, SHOT_H, SHOT_W);
+        game.shots[i].life = 0;
     }
-
+    //Inicia os tiros que pertencem ao TANK
+    game.shots[3].type = SHOT;
+    // for(int i = game.enemiesQuant; i < game.shotsQuant; i++){
+    //     game.shots[i] = initGameObject(0, 0, 2, 2, SHOT, SHOT_H, SHOT_W);
+    //     game.shots[i].life = 0;
+    // }
     //Inicia mapa do Jogo
     initMap();
 
     srand(time(NULL));
 }
+
+/*
+* Não altera o tamanho da lista, apenas subtrai 1 da vida
+*/
+void softKill(GameObject_t *object){
+    object->life -= 1;
+}
+
+/*
+* Para matar um objeto, ao invés de liberar seu espaço de memória
+* ele é trocado com o último da lista e retorna o novo tamanho da lista
+*/
+int hardKill(GameObject_t *objectList, int size, int index){
+    softKill(&objectList[index]);
+    GameObject_t temp = objectList[index];
+    objectList[index] = objectList[size - 1];
+    objectList[size - 1] = temp;
+    return size - 1;
+}
+
 
 int colision(int xA, int yA, int heightA, int widhtA, int xB, int yB, int heightB, int widthB){
     if(xA > xB + widthB) 
@@ -81,16 +125,22 @@ int colision(int xA, int yA, int heightA, int widhtA, int xB, int yB, int height
 }
 
 /*
-* Para matar um objeto, ao invés de liberar seu espaço de memória
-* ele é trocado com o último da lista e retorna o novo tamanho da lista
+* A partir de um "obj", retorna 1 se ele colidiu com algum tiro do tipo "type"
 */
-int kill(GameObject_t *objectList, int size, int index){
-    objectList[index].life = 0;
-    GameObject_t temp = objectList[index];
-    objectList[index] = objectList[size - 1];
-    objectList[size - 1] = temp;
-    return size - 1;
+int colisionWithShot(GameObject_t *obj, GameObject_t *shots, int shotsQuant, int type){
+    for(int i = 0; i < shotsQuant ; i++){
+        GameObject_t *shot = &shots[i];
+        if((shot->type == type) && isAlive(shot)){
+            if(colision(obj->x, obj->y, obj->height, obj->widht, 
+                    shot->x, shot->y, shot->height, shot->widht)){
+                softKill(shot);
+                return 1;
+            }            
+        }
+    }
+    return 0;
 }
+
 /*
 * Esta função recebe um objeto e uma direção, e atualiza a
 * direção e a velocidade do objeto
@@ -210,44 +260,47 @@ void updateTank(int direction){
 
 // ------------ Inimigos ------------
 
-int updateEnemies(){
+int updateEnemies(Game_t *game){
     //---- Movimenta
     int i = 0;
-    while(i < game.enemiesQuant){
+    while(i < game->enemiesQuant){
         GameObject_t enemie;
-        enemie = game.enemies[i];
-        int newX = enemie.x, newY = enemie.y;
-        if(enemie.direction == UP || enemie.direction == DOWN)
-            newY += enemie.dy;
-        else 
-            newX += enemie.dx;
-        //verifica se o tank pode continuar indo na mesma direção
-        if(positionEnable(newX, newY, 28, 28) != 0){
-            move(&(game.enemies[i]), enemie.direction);
-        }else{
-            //caso não possa altera direção
-            enemie.direction = rand() % 4;
-            updateDirection(&(game.enemies[i]), enemie.direction);
+        enemie = game->enemies[i];
+        if(isAlive(&enemie)){
+            int newX = enemie.x, newY = enemie.y;
+            if(enemie.direction == UP || enemie.direction == DOWN)
+                newY += enemie.dy;
+            else 
+                newX += enemie.dx;
+            //verifica se o tank pode continuar indo na mesma direção
+            if(positionEnable(newX, newY, 28, 28) != 0){
+                move(&(game->enemies[i]), enemie.direction);
+            }else{
+                //caso não possa altera direção
+                enemie.direction = rand() % 4;
+                updateDirection(&(game->enemies[i]), enemie.direction);
+            }
         }
         i++;
     }
 
-    //---- Verifica colisão
-    GameObject_t shot = game.shots[game.shotsQuant - 1];
+    //---- Verifica colisão e atira
     i = 0;
-    while(i < game.enemiesQuant){
-        GameObject_t enemie;
-        enemie = game.enemies[i];
-        if(colision(enemie.x, enemie.y, 30, 32, shot.x, shot.y, 9, 8)){
-            game.enemiesQuant = kill(game.enemies, game.enemiesQuant, i);
-            return 1;
-        }else{
-            i++;
+    while(i < game->enemiesQuant){
+        GameObject_t *enemie;
+        enemie = &game->enemies[i];
+        if(isAlive(enemie)){
+            //---- Verifica colisão e atira
+            if(colisionWithShot(enemie, game->shots, game->shotsQuant, SHOT)){
+                softKill(enemie);
+                return i;
+            } else {
+                shoot(enemie, i);
+            }
         }
+        i++;
     }
-
-    //---- Atira
-    return 0;
+    return -1;
 }
 
 // ------------ Mapa ------------
@@ -266,8 +319,8 @@ void initWall(int height, int width, int x, int y){
     Wall_t *wall = &(game.map[game.mapQuant - 1]);
     
     //converte e salva o tamanho da parede de bloco para pixels
-    wall->height = BLOCK_HEIGHT*height;
-    wall->width = BLOCK_WIDTH * width;
+    wall->height = BLOCK_H*height;
+    wall->width = BLOCK_W*width;
     //salva a posição inicial da parede
     wall->x = x;
     wall->y = y;
@@ -291,14 +344,14 @@ void initWall(int height, int width, int x, int y){
         xBlock = wall->x;
         for(int j = 0; j < width; j++){
             //cria um GameObject_t do tipo bloco, com posição (x, y)
-            wall->blocks[index] = initGameObject(xBlock,yBlock, 0, 0, BLOCK, 0, 0);
+            wall->blocks[index] = initGameObject(xBlock,yBlock, 0, 0, BLOCK, BLOCK_H, BLOCK_W);
             wall->blocks[index].direction = direction;
             //incrementa indice e posição x
             index++;
-            xBlock+= BLOCK_WIDTH;
+            xBlock+= BLOCK_W;
         }
         //incrementa posição y e verifica qual a direção da próxima linha
-        yBlock+=BLOCK_HEIGHT;
+        yBlock+=BLOCK_H;
         direction = direction == 0 ? 1 : 0;
     }
 }
@@ -348,14 +401,36 @@ void initMap(){
     }
 }
 
+int updateMap(Game_t *game, GameObject_t *exploded){
+    int explodedCount = 0;
+    for(int i = 0; i < game->mapQuant; i++){
+        Wall_t *wall = &game->map[i];
+        for(int j = 0; j < wall->quantBlock; j++){
+            GameObject_t *block;
+            block = &wall->blocks[j];
+            if(colisionWithShot(block, game->shots, game->shotsQuant, SHOT)){
+                GameObject_t *explodedBlock = &exploded[explodedCount];
+                explodedBlock->x = block->x;
+                explodedBlock->y = block->y;
+                explodedCount++;
+                wall->quantBlock = hardKill(wall->blocks, wall->quantBlock, j);
+            }
+        }
+    }
+    return explodedCount;
+}
+
 // ------------ Tiro ------------
-void shoot(GameObject_t *shooter){
-    //TODO: Verificar se já não existe um tiro em jogo
+int shoot(GameObject_t *shooter, int index){
     GameObject_t *shot;
-    shot = &(game.shots[game.shotsQuant - 1]);
+    shot = &(game.shots[index]);
+    // Verifica se já não existe tiro
+    if(isAlive(shot))
+        return 0;
+    
     int positionOffsetY = shot->height/2;
     int positionOffsetX = shot->widht/2;
-    int offset = 2;
+    int offset = 1;
     if(shooter->direction == UP)
         setPosition(shot, shooter->x+(shooter->widht/2)-positionOffsetX, shooter->y-offset-shot->height);
     if(shooter->direction == DOWN)
@@ -366,10 +441,35 @@ void shoot(GameObject_t *shooter){
         setPosition(shot, shooter->x+(shooter->widht+offset), shooter->y+(shooter->height/2)-positionOffsetX);
     
     shot->direction = shooter->direction;
+    shot->life = 1;
+    return 1;
 }
 
-void updateShot(){
-    GameObject_t *shot;
-    shot = &(game.shots[game.shotsQuant - 1]);
-    move(shot, shot->direction);
+int isInBattleField(int x, int y, int heigh, int widht){
+    if(x < 0)
+        return 0;
+    if(y < 0)
+        return 0;
+    if((x+heigh) > BATTLE_FIELD_W)
+        return 0;
+    if((y+widht) > BATTLE_FIELD_H)
+        return 0;
+    return 1;
 }
+
+int updateShots(Game_t *game){
+    for(int i = 0; i < game->shotsQuant; i++){
+        GameObject_t *shot = &game->shots[i];
+        if(isAlive(shot)){
+            move(shot, shot->direction);
+            //Verifica se a nova posição esta dentro do campo
+            if(!isInBattleField(shot->x, shot->y, shot->height, shot->widht)){
+                softKill(shot);
+                return i;
+            }
+        }
+    }
+
+    return -1;
+}
+

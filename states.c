@@ -1,12 +1,7 @@
 #include "states.h"
 
-void start(){
-    state = INIT_STAGE;
-}
+// ------------ Funções auxiliares ------------
 
-void init_stage(){
-    state = PLAY;
-}
 int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
     if(key[ALLEGRO_KEY_LEFT])
         return LEFT;
@@ -18,6 +13,54 @@ int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
         return DOWN;
     return -1;
 }
+
+void drawGame(Game_t *game){
+    // Configurações iniciais
+    beforeDraw();
+    
+    //TODO: Desenha borda e conteudos estáticos
+    
+    // Desenha Tank
+    drawDisplay(&game->tank);
+    
+    //Desenha inimigos
+    for(int i = 0; i < game->enemiesQuant; i++){
+        if(isAlive(&(game->enemies[i]))){
+            drawDisplay(&(game->enemies[i]));
+        }
+    }
+    
+    //Desenha tiro
+    for(int i = 0; i < game->shotsQuant; i++){
+        if(isAlive(&game->shots[i])){
+            drawDisplay(&(game->shots[i]));
+        }
+    }
+
+    //Desenha mapa
+    for(int i = 0; i < game->mapQuant; i++){
+        Wall_t wall = game->map[i];
+        for(int j = 0; j < wall.quantBlock; j++){
+            drawDisplay(&wall.blocks[j]);
+        }
+    }
+
+    //Desenha efeitos
+    fx_draw();
+
+    //Exibe na tela
+    showDraw();
+}
+// ------------ Funções de estado ------------
+
+void start(){
+    state = INIT_STAGE;
+}
+
+void init_stage(){
+    state = PLAY;
+}
+
 void play(){
     //instancia variaveis
     InitGame();
@@ -33,6 +76,7 @@ void play(){
     memset(key, 0, sizeof(key));
     fx_init();
     startFPS();
+
     while(1){
         al_wait_for_event(queue, &event);
         switch(event.type)
@@ -42,15 +86,33 @@ void play(){
                 input = readInput(key);
                 updateTank(input);
                 //atira
-                if(key[ALLEGRO_KEY_Z]) shoot(&game.tank);
+                if(key[ALLEGRO_KEY_Z]) shoot(&game.tank, 3);
 
-                //updateShot();
-
-                if(updateEnemies()){
-                    fx_add(game.shots[0].x + 5, game.shots[0].y + 5); //TODO: Arrumar posição explosão
+                int deadEnemie = updateEnemies(&game); 
+                if(deadEnemie >= 0){
+                    int x, y;
+                    getMiddlePosition(game.enemies, deadEnemie, &x, &y);
+                    fx_add(x, y);
                 }
 
-                //TODO: UPDATE MAP
+                int explodedShots = updateShots(&game); 
+                if(explodedShots >= 0){
+                    int x, y;
+                    getMiddlePosition(game.shots, explodedShots, &x, &y);
+                    fx_add(x, y);
+                }
+
+                int quantExplodedBlocks = 0;
+                GameObject_t explodedBlocks[10];
+                quantExplodedBlocks = updateMap(&game, explodedBlocks);
+                if(explodedBlocks >= 0){
+                    for(int i = 0; i < quantExplodedBlocks; i++){
+                        int x, y;
+                        getMiddlePosition(explodedBlocks, i, &x, &y);
+                        fx_add(x, y);
+                    }
+                }
+
                 fx_update();
                 
                 for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
@@ -78,28 +140,7 @@ void play(){
             break;
         
         if(redraw && al_is_event_queue_empty(queue)){
-            // //desenha tank
-            beforeDraw();
-            //drawDisplay(game.tank.x, game.tank.y, game.tank.type, game.tank.direction);
-            drawDisplay(&game.tank);
-            //desenha inimigos
-            for(int i = 0; i < game.enemiesQuant; i++){
-                drawDisplay(&(game.enemies[i]));
-            }
-            //desenha tiro
-            for(int i = 0; i < game.shotsQuant; i++){
-                drawDisplay(&game.shots[i]);
-            }
-            //desenha mapa
-            for(int i = 0; i < game.mapQuant; i++){
-                Wall_t wall = game.map[i];
-                for(int j = 0; j < wall.quantBlock; j++){
-                    drawDisplay(&wall.blocks[j]);
-                }
-            }
-            //desenha efeitos
-            fx_draw();
-            showDraw();
+            drawGame(&game);
             redraw = false;
         }
         cicle++;

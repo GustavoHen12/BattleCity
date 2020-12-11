@@ -85,8 +85,8 @@ void initSprites()
     sprites.explosion[1] = sprite_grab(290, 64, 32, 45);
     sprites.explosion[2] = sprite_grab(320, 64, 45, 45);
     
-    sprites.block[0] = sprite_grab(96, 264, 16, BLOCK_H);
-    sprites.block[1] = sprite_grab(184, 264, 16, BLOCK_H);
+    sprites.block[0] = sprite_grab(96, 264, BLOCK_W, BLOCK_H);
+    sprites.block[1] = sprite_grab(184, 264, BLOCK_W, BLOCK_H);
 }
 
 int initDisplay (){
@@ -116,7 +116,7 @@ void drawDisplay (GameObject_t *obj){
     if(type == ENEMIES){
         sprite = sprites.enemies[direction];
     }
-    if(type == SHOT){
+    if(type == SHOT || type == ENEMIE_SHOT){
         sprite = sprites.shots[direction];
     }
     if(type == BLOCK){
@@ -126,31 +126,34 @@ void drawDisplay (GameObject_t *obj){
     al_draw_bitmap(sprite, x, y, 0);
 }
 
-void testaSprite(GameObject_t *obj){
-    int type = obj->type;
-    int direction = obj->direction;
-    int x = obj->x, y = obj->y;
-    //desenha o sprite "sprite" na tela na posicação (x, y)
-    ALLEGRO_BITMAP* sprite;
-    if(type == TANK){
-        sprite = sprites.tank[direction];
-    }
-    if(type == ENEMIES){
-        sprite = sprites.enemies[direction];
-    }
-    if(type == SHOT){
-        sprite = sprites.shots[direction];
-    }
-    if(type == BLOCK){
-        sprite = sprites.block[direction];
-    }
+// void testaSprite( GameObject_t *obj, GameObject_t *obj2){
+//     printObject2(obj2);
+//     int type = obj->type;
+//     int direction = obj->direction;
+//     int x = obj->x, y = obj->y;
+//     //desenha o sprite "sprite" na tela na posicação (x, y)
+//     if(obj->type != ENEMIE_SHOT){
+//         ALLEGRO_BITMAP* sprite = sprites.shots[direction];
+//         if(type == TANK){
+//             sprite = sprites.tank[direction];
+//         }
+//         if(type == ENEMIES){
+//             sprite = sprites.enemies[direction];
+//         }
+//         if(type == SHOT){
+//             sprite = sprites.shots[direction];
+//         }
+//         if(type == BLOCK){
+//             sprite = sprites.block[direction];
+//         }
 
-    al_draw_bitmap(sprite, x, y, 0);
-    al_draw_line(x, y, x, y+obj->height, al_map_rgb_f(1, 1, 0), 1);
-    al_draw_line(x, y, x+obj->widht, y, al_map_rgb_f(1, 1, 0), 1);
-    al_draw_line(x, y+obj->height, x+obj->widht, y+obj->height, al_map_rgb_f(1, 1, 0), 1);
-    al_draw_line(x+obj->widht, y, x+obj->widht, y+obj->height, al_map_rgb_f(1, 1, 0), 1);
-}
+//         al_draw_bitmap(sprite, x, y, 0);
+//         // al_draw_line(x, y, x, y+obj->height, al_map_rgb_f(1, 1, 0), 1);
+//         // al_draw_line(x, y, x+obj->widht, y, al_map_rgb_f(1, 1, 0), 1);
+//         // al_draw_line(x, y+obj->height, x+obj->widht, y+obj->height, al_map_rgb_f(1, 1, 0), 1);
+//         // al_draw_line(x+obj->widht, y, x+obj->widht, y+obj->height, al_map_rgb_f(1, 1, 0), 1);
+//     }
+// }
 
 void beforeDraw(){
     al_clear_to_color(al_map_rgb(0, 0, 0));

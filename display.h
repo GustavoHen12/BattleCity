@@ -13,9 +13,6 @@
 // ------------ Sprites ------------
 //define tamanho dos sprites(px)
 
-#define BLOCK_H 8
-#define BLOCK_W 22
-
 #define EAGLE_H
 #define EAGLE_W
 
@@ -120,5 +117,5 @@ void spritesInit();
 /*
 
 */
-void testaSprite( GameObject_t *obj );
+void testaSprite( GameObject_t *obj, GameObject_t *obj2);
 #endif

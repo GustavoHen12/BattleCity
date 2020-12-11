@@ -10,6 +10,15 @@
 #define SHOT_H 9
 #define SHOT_W 8
 
+#define BATTLE_FIELD_H 500
+#define BATTLE_FIELD_W 650
+
+#define BLOCK_H 8
+#define BLOCK_W 16
+
+// #define BLOCK_H 8
+// #define BLOCK_W 22
+
 enum type_obj {TANK, ENEMIES, BLOCK, EAGLE, FLAG, SHOT, ENEMIE_SHOT};
 
 enum directions {UP, DOWN, LEFT, RIGHT};

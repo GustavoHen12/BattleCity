@@ -13,9 +13,6 @@
 #define INTERVAL_GENERATE_ENEMIES 180
 #define ENEMIES_QUANT 1
 
-#define BLOCK_WIDTH 16
-#define BLOCK_HEIGHT 8
-
 typedef struct{
     GameObject_t *blocks;
     int x, y, height, width, quantBlock;
@@ -50,14 +47,24 @@ void updateTank(int direction);
 void nextCicle(int *cicle);
 
 //atira
-void shoot(GameObject_t *shooter);
-void updateShot();
+int shoot(GameObject_t *shooter, int index);
+
+int updateShots(Game_t *game);
 
 //veirifa colisao
 
+
+int updateEnemies(Game_t *game);
+
 //adiciona inimigo
-int updateEnemies();
+void createEnemies(GameObject_t *enemies);
+
+int isAlive(GameObject_t *obj);
 
 void initMap();
+
+int updateMap(Game_t *game, GameObject_t *exploded);
+
+void getMiddlePosition(GameObject_t *obj, int index, int *x, int *y);
 
 #endif
