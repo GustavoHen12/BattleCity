@@ -7,6 +7,8 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
 
 #include"gameObject.h"
 
@@ -35,9 +37,17 @@ typedef struct SPRITES
     ALLEGRO_BITMAP* block[2];
     ALLEGRO_BITMAP* eagle;
     ALLEGRO_BITMAP* flag;
-} SPRITES;
+} Sprites_t;
 
-SPRITES sprites;
+Sprites_t sprites;
+
+typedef struct {
+    ALLEGRO_SAMPLE *explosion;
+    ALLEGRO_SAMPLE *creation;
+    ALLEGRO_SAMPLE *shot;
+} Sounds_t;
+
+Sounds_t sounds;
 
 // ------------ Variaveis globais e config do display ------------
 //inicia as variáveis globais que serão necessárias
@@ -58,7 +68,8 @@ typedef ALLEGRO_EVENT TimerEvent_t;
 
 // ------------ Efeitos ------------
 #define FX_TYPE_EXPLOSION 0
-#define FX_TYPE_CRATION 1
+#define FX_TYPE_CREATION 1
+#define FX_TYPE_SHOT 2
 
 typedef struct FX
 {
@@ -76,7 +87,9 @@ void fx_init();
 void fx_draw();
 void fx_update();
 void fx_add(int x, int y, int type);
+int fx_finished(int type);
 
+void playSound(int type);
 /*
 * Esta funcao inicia um display de DISPLAY_HEIGHxDISPLAY_WIDHT
 * e faz as configurações iniciais e inicializa as variaveis globais

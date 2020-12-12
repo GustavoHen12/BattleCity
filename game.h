@@ -11,7 +11,7 @@
 
 #define MAX_SHOOT_SIZE 200
 #define INTERVAL_GENERATE_ENEMIES 180
-#define ENEMIES_QUANT 1
+#define ENEMIES_QUANT 4
 
 typedef struct{
     GameObject_t *blocks;
@@ -54,7 +54,7 @@ int updateShots(Game_t *game);
 int updateEnemies(Game_t *game);
 
 //adiciona inimigo
-void createEnemies(GameObject_t *enemies);
+int crateEnemie(GameObject_t *enemies, int quant, int *position);
 
 int isAlive(GameObject_t *obj);
 
@@ -64,6 +64,7 @@ int updateMap(Game_t *game, GameObject_t *exploded);
 
 void getMiddlePosition(GameObject_t *obj, int index, int *x, int *y);
 
-int sendEnemie(Game_t *game, int cicle);
+int sendEnemie(Game_t *game, int *cicle);
 
+void getInitialPosition(int *x, int *y, int type, int position);
 #endif

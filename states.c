@@ -60,8 +60,10 @@ void play(){
    
     int input = -1;
     int cicle = 0;
-    // int positionNextEnemie = 0;
+    int positionNextEnemie = 0;
     
+    //Position_t initialPositions[4];
+
     //laço principal
     bool done = false;
     bool redraw = true;
@@ -82,7 +84,10 @@ void play(){
                 input = readInput(key);
                 updateTank(input);
                 //atira
-                if(key[ALLEGRO_KEY_Z]) shoot(&game.tank, 3);
+                if(key[ALLEGRO_KEY_Z]){
+                    shoot(&game.tank, 3);
+                    playSound(FX_TYPE_SHOT);
+                }
 
                 int deadEnemie = updateEnemies(&game); 
                 if(deadEnemie >= 0){
@@ -98,16 +103,21 @@ void play(){
                     fx_add(x, y, FX_TYPE_EXPLOSION);
                 }
 
-                if(sendEnemie(&game, cicle)){
+                if(sendEnemie(&game, &cicle)){
+                    int x, y;
+                    getInitialPosition(&x, &y, ENEMIES, positionNextEnemie);
                     //cria efeito do nascimento
+                    fx_add(x, y+8, FX_TYPE_CREATION);
                 }
-                //if(fxFineshed) addEnemie();
-                // para fazer o fxFineshed é só lembrar q 2 inimigos não podem nascer ao mesmo tempo
+
+                if(fx_finished(FX_TYPE_CREATION)){
+                    crateEnemie(game.enemies, game.enemiesQuant, &positionNextEnemie);
+                }
 
                 int quantExplodedBlocks = 0;
                 GameObject_t explodedBlocks[10];
                 quantExplodedBlocks = updateMap(&game, explodedBlocks);
-                if(explodedBlocks >= 0){
+                if(quantExplodedBlocks > 0){
                     for(int i = 0; i < quantExplodedBlocks; i++){
                         int x, y;
                         getMiddlePosition(explodedBlocks, i, &x, &y);
@@ -156,6 +166,7 @@ void play(){
             redraw = false;
         }
         cicle++;
+        //resetCicle();
     }
     closeDisplay();
     state = 8;

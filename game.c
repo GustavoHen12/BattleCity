@@ -12,6 +12,27 @@ void printObject(GameObject_t *obj){
     printf("x: %d, y: %d, dx: %d, dy: %d, type: %d, heigh: %d, widht: %d, life: %d \n",
     obj->x, obj->y, obj->dx, obj->dy, obj->type, obj->height, obj->widht, obj->life);
 }
+
+void getInitialPosition(int *x, int *y, int type, int position){
+    if(type == TANK){
+        *x = 30;
+        *y = 40;
+    }else{
+        if(position == 0){
+            *x = 10;
+            *y = 5;
+        }
+        if(position == 1){
+            *x = 150;
+            *y = 5;
+        }
+        if(position == 2){
+            *x = 400;
+            *y = 5;
+        }
+    }
+
+}
 // -----------
 
 void setPosition(GameObject_t *objeto, int x, int y){
@@ -56,7 +77,7 @@ void getMiddlePosition(GameObject_t *obj, int index, int *x, int *y){
 
 void InitGame(){
     //INICIA TANK
-    game.tank = initGameObject(0, 0, 1, 1, TANK, TANK_H, TANK_W);
+    game.tank = initGameObject(0, 0, 2, 2, TANK, TANK_H, TANK_W);
     testMalloc(&(game.tank), "tank");
 
     //Aloca espaco para os inimigos e testa
@@ -66,8 +87,8 @@ void InitGame(){
     game.enemiesQuant = ENEMIES_QUANT;
     //configura posições iniciais
     for(int i = 0; i < ENEMIES_QUANT; i++){
-        game.enemies[i] = initGameObject(3, 3, 4, 4, ENEMIES, ENEMIES_H, ENEMIES_W);
-        //game.enemies[i].life = 0;
+        game.enemies[i] = initGameObject(3, 3, 1, 1, ENEMIES, ENEMIES_H, ENEMIES_W);
+        game.enemies[i].life = 0;
     }
 
     //Aloca espaço para tiros
@@ -76,7 +97,7 @@ void InitGame(){
     testMalloc(game.shots, "tiros");
     //Inicia os tiros que pertence ao inimigo
     for(int i = 0; i < game.shotsQuant; i++){
-        game.shots[i] = initGameObject(0, 0, 2, 2, ENEMIE_SHOT, SHOT_H, SHOT_W);
+        game.shots[i] = initGameObject(0, 0, 3, 3, ENEMIE_SHOT, SHOT_H, SHOT_W);
         game.shots[i].life = 0;
     }
     //Inicia os tiros que pertencem ao TANK
@@ -221,9 +242,29 @@ int positionEnable(int posX, int posY, int height, int widht){
             }
         }
     }
+
     return 1;
 }
 
+int colisionWithTank(GameObject_t *obj, Game_t *game, int x, int y, int type, int index){
+    for(int i = 0; i < game->enemiesQuant; i++){
+        GameObject_t *enemie = &game->enemies[i];
+        if(isAlive(enemie) && i != index){
+            if(colision(x, y, obj->height, obj->widht, 
+                enemie->x, enemie->y, enemie->height, enemie->widht))
+                return 1;
+        }
+    }
+
+    // if(type != TANK){
+    //     GameObject_t *tank = &game->tank;
+    //     if(colision(x, y, obj->height, obj->widht, 
+    //         tank->x, tank->y, tank->height, tank->widht))
+    //         return 1;
+    // }
+
+    return 0;
+}
 // ------------ Tank ------------
 void updateTank(int direction){
     if(direction != -1){
@@ -271,7 +312,8 @@ int updateEnemies(Game_t *game){
             else 
                 newX += enemie.dx;
             //verifica se o tank pode continuar indo na mesma direção
-            if(positionEnable(newX, newY, 28, 28) != 0){
+            if((positionEnable(newX, newY, 28, 28) != 0)
+                && !colisionWithTank(&enemie, game, newX, newY, ENEMIES, i)){
                 move(&(game->enemies[i]), enemie.direction);
             }else{
                 //caso não possa altera direção
@@ -301,6 +343,35 @@ int updateEnemies(Game_t *game){
     return -1;
 }
 
+int sendEnemie(Game_t *game, int *cicle){
+    if(*cicle >= 180){
+        *cicle = 0;
+        GameObject_t *enemies = game->enemies;
+        for(int i = 0; i < game->enemiesQuant; i++){
+            if(!isAlive(&enemies[i])){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+void respawn(GameObject_t *obj, int position){
+    obj->life = 1;
+    getInitialPosition(&obj->x, &obj->y, ENEMIES, position);
+    
+}
+
+int crateEnemie(GameObject_t *enemies, int quant, int *position){
+    for(int i = 0; i < quant; i++){
+        if(!isAlive(&enemies[i])){
+            respawn(&enemies[i], *position);
+            *position = *position == 3 ? 0:*position+1;
+            return 1;
+        }
+    }
+    return 0;
+}
 // ------------ Mapa ------------
 
 /*
@@ -398,6 +469,16 @@ void initMap(){
         initWall(height, width, x, y);
     }
 }
+void copyGameObject(GameObject_t *dest, GameObject_t *source){
+    dest->x = source->x;
+    dest->y = source->y;
+    dest->dx = source->dx;
+    dest->dy = source->dy;
+    dest->type = source->type;
+    dest->life = source->life;
+    dest->height = source->height;
+    dest->widht = source->widht;
+}
 
 int updateMap(Game_t *game, GameObject_t *exploded){
     int explodedCount = 0;
@@ -408,9 +489,7 @@ int updateMap(Game_t *game, GameObject_t *exploded){
             block = &wall->blocks[j];
             if(colisionWithShot(block, game->shots, game->shotsQuant, SHOT)
                 || colisionWithShot(block, game->shots, game->shotsQuant, ENEMIE_SHOT)){
-                GameObject_t *explodedBlock = &exploded[explodedCount];
-                explodedBlock->x = block->x;
-                explodedBlock->y = block->y;
+                copyGameObject(&exploded[explodedCount], block);
                 explodedCount++;
                 wall->quantBlock = hardKill(wall->blocks, wall->quantBlock, j);
             }

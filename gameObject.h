@@ -26,6 +26,10 @@ enum type_obj {TANK, ENEMIES, BLOCK, EAGLE, FLAG, SHOT, ENEMIE_SHOT};
 
 enum directions {UP, DOWN, LEFT, RIGHT};
 
+typedef struct{
+    int x, y;
+} Position_t;
+
 typedef struct {
     //posicao
     int x, y;

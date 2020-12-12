@@ -39,6 +39,11 @@ int initConf () {
     //inicia primitivos
     check(al_init_primitives_addon(), "primitivos");
 
+    //inicia sons
+    check(al_install_audio(), "audio");
+    check(al_init_acodec_addon(), "audio codecs");
+    check(al_reserve_samples(16), "reserve samples");
+
     //Registra as fontes de eventos
     al_register_event_source(queue, al_get_keyboard_event_source());
     al_register_event_source(queue, al_get_display_event_source(screen));
@@ -96,12 +101,24 @@ void initSprites()
     sprites.creation[5] = sprite_grab(418, 34, 30, 30);
 }
 
+void initSound(){
+    sounds.explosion = al_load_sample("resources/explosion.wav");
+    check(sounds.explosion, "som explosão");
+    sounds.creation = al_load_sample("resources/creation.wav");
+    check(sounds.explosion, "som criação");
+    sounds.shot = al_load_sample("resources/shot.wav");
+    check(sounds.explosion, "som tiro");
+}
+
 int initDisplay (){
     //inicia as configurações do display
     initConf();
 
     //inicia sprites
     initSprites();
+
+    //inicia sons
+    initSound();
 
     return 1;
 }
@@ -156,6 +173,15 @@ void closeDisplay(){
     al_destroy_display(screen);
 }
 
+void playSound(int type){
+    if(type == FX_TYPE_CREATION)
+        al_play_sample(sounds.creation, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+    if(type == FX_TYPE_EXPLOSION)
+        al_play_sample(sounds.explosion, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+    if(type == FX_TYPE_SHOT)
+        al_play_sample(sounds.shot, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+}
+
 // ------------ Efeitos -----------
 
 //TODO: REFATORAR OU COLOCAR CRÉDITOS
@@ -167,6 +193,9 @@ void fx_init()
 
 void fx_add(int x, int y, int type)
 {
+    // ALLEGRO_SAMPLE *sound;
+    playSound(type);
+
     for(int i = 0; i < FX_N; i++)
     {
         if(fx[i].used)
@@ -189,7 +218,7 @@ void fx_update()
             continue;
 
         fx[i].frame++;
-        if(fx[i].type == FX_TYPE_CRATION){
+        if(fx[i].type == FX_TYPE_CREATION){
             if(fx[i].frame == (CREATION_FRAMES * 8))
                 fx[i].used = false;
         }else{
@@ -197,6 +226,23 @@ void fx_update()
                 fx[i].used = false;
         }
     }
+}
+
+int fx_finished(int type){
+    int finish = 0;
+    int frames = type == FX_TYPE_CREATION ? CREATION_FRAMES : EXPLOSION_FRAMES;
+    for(int i = 0; i < FX_N; i++)
+    {
+        if(!fx[i].used)
+            continue;
+
+        if(fx[i].type == type){
+            if((fx[i].frame + 1) == (frames * 8))
+                finish = 1;
+        }
+    }
+
+    return finish;
 }
 
 void fx_draw()
@@ -207,7 +253,7 @@ void fx_draw()
             continue;
 
         int frame_display = fx[i].frame / 8;
-        ALLEGRO_BITMAP *bmp = fx[i].type == FX_TYPE_CRATION ? 
+        ALLEGRO_BITMAP *bmp = fx[i].type == FX_TYPE_CREATION ? 
                                             sprites.creation[frame_display]
                                             :sprites.explosion[frame_display];
 
