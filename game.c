@@ -14,26 +14,37 @@ void printObject(GameObject_t *obj){
 }
 
 void getInitialPosition(int *x, int *y, int type, int position){
+    int margin = 7;
     if(type == TANK){
         *x = 30;
         *y = 40;
     }else{
         if(position == 0){
-            *x = 10;
-            *y = 5;
+            *x = margin;
+            *y = margin;
         }
         if(position == 1){
-            *x = 150;
-            *y = 5;
+            *x = (BATTLE_FIELD_W / 2) - (ENEMIES_W/2);
+            *y = margin;
         }
         if(position == 2){
-            *x = 400;
-            *y = 5;
+            *x = BATTLE_FIELD_W - margin - ENEMIES_W;
+            *y = margin;
         }
     }
 
 }
 // -----------
+void copyGameObject(GameObject_t *dest, GameObject_t *source){
+    dest->x = source->x;
+    dest->y = source->y;
+    dest->dx = source->dx;
+    dest->dy = source->dy;
+    dest->type = source->type;
+    dest->life = source->life;
+    dest->height = source->height;
+    dest->widht = source->widht;
+}
 
 void setPosition(GameObject_t *objeto, int x, int y){
     objeto->x = x;
@@ -92,7 +103,7 @@ void InitGame(){
     }
 
     //Aloca espaço para tiros
-    game.shotsQuant = 5;
+    game.shotsQuant = SHOTS_QUANT;
     game.shots = malloc(sizeof(GameObject_t)*game.shotsQuant);
     testMalloc(game.shots, "tiros");
     //Inicia os tiros que pertence ao inimigo
@@ -100,12 +111,9 @@ void InitGame(){
         game.shots[i] = initGameObject(0, 0, 3, 3, ENEMIE_SHOT, SHOT_H, SHOT_W);
         game.shots[i].life = 0;
     }
-    //Inicia os tiros que pertencem ao TANK
-    game.shots[3].type = SHOT;
-    // for(int i = game.enemiesQuant; i < game.shotsQuant; i++){
-    //     game.shots[i] = initGameObject(0, 0, 2, 2, SHOT, SHOT_H, SHOT_W);
-    //     game.shots[i].life = 0;
-    // }
+    //Inicia o tiro que pertence ao TANK
+    game.shots[TANK_SHOT_INDEX].type = SHOT;
+ 
     //Inicia mapa do Jogo
     initMap();
 
@@ -167,30 +175,29 @@ int colisionWithShot(GameObject_t *obj, GameObject_t *shots, int shotsQuant, int
 * direção e a velocidade do objeto
 */
 void updateDirection(GameObject_t *object, int newDirection){
-    switch (newDirection)
-    {
-    case UP:
-        if(object->dy > 0)
-            object->dy *= -1;
-        object->direction = UP;
-        break;
-    case DOWN:
-        if(object->dy < 0)
-            object->dy *= -1;
-        object->direction = DOWN;
-        break;
-    case LEFT:
-        if(object->dx > 0)
-            object->dx *= -1;
-        object->direction = LEFT;
-        break;
-    case RIGHT:
-        if(object->dx < 0)
-            object->dx *= -1;
-        object->direction = RIGHT;
-        break;
-    default:
-        break;
+    switch (newDirection) {
+        case UP:
+            if(object->dy > 0)
+                object->dy *= -1;
+            object->direction = UP;
+            break;
+        case DOWN:
+            if(object->dy < 0)
+                object->dy *= -1;
+            object->direction = DOWN;
+            break;
+        case LEFT:
+            if(object->dx > 0)
+                object->dx *= -1;
+            object->direction = LEFT;
+            break;
+        case RIGHT:
+            if(object->dx < 0)
+                object->dx *= -1;
+            object->direction = RIGHT;
+            break;
+        default:
+            break;
     }
 }
 
@@ -232,12 +239,14 @@ int positionEnable(int posX, int posY, int height, int widht){
     //verifica se esta dentro de alguma parede
     for(int i = 0; i < game.mapQuant; i++){
         Wall_t wall = game.map[i];
-        if(colision(posX, posY, height, widht, wall.x, wall.y, wall.height, wall.width)){
-            for(int j = 0; j < wall.quantBlock; j++){
-                GameObject_t block;
-                block = wall.blocks[j];
-                if(colision(posX, posY, height, widht, block.x, block.y, 8, 22)){
-                    return 0;   
+        if(wall.type != BUSH){
+            if(colision(posX, posY, height, widht, wall.x, wall.y, wall.height, wall.width)){
+                for(int j = 0; j < wall.quantBlock; j++){
+                    GameObject_t block;
+                    block = wall.blocks[j];
+                    if(colision(posX, posY, height, widht, block.x, block.y, block.height, block.widht)){
+                        return 0;   
+                    }
                 }
             }
         }
@@ -256,12 +265,12 @@ int colisionWithTank(GameObject_t *obj, Game_t *game, int x, int y, int type, in
         }
     }
 
-    // if(type != TANK){
-    //     GameObject_t *tank = &game->tank;
-    //     if(colision(x, y, obj->height, obj->widht, 
-    //         tank->x, tank->y, tank->height, tank->widht))
-    //         return 1;
-    // }
+    if(type != TANK){
+        GameObject_t *tank = &game->tank;
+        if(colision(x, y, obj->height, obj->widht, 
+            tank->x, tank->y, tank->height, tank->widht))
+            return 1;
+    }
 
     return 0;
 }
@@ -270,26 +279,25 @@ void updateTank(int direction){
     if(direction != -1){
         int newX = game.tank.x, newY = game.tank.y;
         int dx = game.tank.dx, dy = game.tank.dy;
-        switch (direction)
-        {
-        case UP:
-            if(game.tank.dy > 0) dy *= -1;
-            newY = game.tank.y + dy;
-            break;
-        case DOWN:
-            if(game.tank.dy < 0) dy *= -1;
-            newY = game.tank.y + dy;
-            break;
-        case LEFT:
-            if(game.tank.dx > 0) dx *= -1;
-            newX = game.tank.x + dx;
-            break;
-        case RIGHT:
-            if(game.tank.dx < 0) dx *= -1;
-            newX = game.tank.x + dx;
-            break;
-        default:
-            break;
+        switch (direction){
+            case UP:
+                if(game.tank.dy > 0) dy *= -1;
+                newY = game.tank.y + dy;
+                break;
+            case DOWN:
+                if(game.tank.dy < 0) dy *= -1;
+                newY = game.tank.y + dy;
+                break;
+            case LEFT:
+                if(game.tank.dx > 0) dx *= -1;
+                newX = game.tank.x + dx;
+                break;
+            case RIGHT:
+                if(game.tank.dx < 0) dx *= -1;
+                newX = game.tank.x + dx;
+                break;
+            default:
+                break;
         }
         if(positionEnable(newX, newY, 28, 28) != 0){
             move(&game.tank, direction);
@@ -344,8 +352,7 @@ int updateEnemies(Game_t *game){
 }
 
 int sendEnemie(Game_t *game, int *cicle){
-    if(*cicle >= 180){
-        *cicle = 0;
+    if(*cicle >= INTERVAL_GENERATE_ENEMIES){
         GameObject_t *enemies = game->enemies;
         for(int i = 0; i < game->enemiesQuant; i++){
             if(!isAlive(&enemies[i])){
@@ -358,8 +365,7 @@ int sendEnemie(Game_t *game, int *cicle){
 
 void respawn(GameObject_t *obj, int position){
     obj->life = 1;
-    getInitialPosition(&obj->x, &obj->y, ENEMIES, position);
-    
+    getInitialPosition(&obj->x, &obj->y, ENEMIES, position);   
 }
 
 int crateEnemie(GameObject_t *enemies, int quant, int *position){
@@ -379,7 +385,14 @@ int crateEnemie(GameObject_t *enemies, int quant, int *position){
 * "height"x"widht", configura o tamanho do parede a ser criada (em blocos NÃO EM PIXELS)
 * esta parede terá como posição superior esquerdo (x, y)
 */
-void initWall(int height, int width, int x, int y){
+void initWall(int height, int width, int x, int y, int type){
+    // Estas variaveis são iniciadas, porque o tamanho do bloco varia conforme
+    // o tipo da parede
+    int blockHeigh = BLOCK_H, blockWidht = BLOCK_W;
+    if(type != BRICK){
+        blockHeigh *= 2;
+    }
+
     //incrementa quantidade de paredes no mapa
     game.mapQuant++;
 
@@ -387,9 +400,12 @@ void initWall(int height, int width, int x, int y){
     //Pega ponteiro para a parede que será criada
     Wall_t *wall = &(game.map[game.mapQuant - 1]);
     
+    //salva o tipo da parede
+    wall->type = type;
+
     //converte e salva o tamanho da parede de bloco para pixels
-    wall->height = BLOCK_H*height;
-    wall->width = BLOCK_W*width;
+    wall->height = blockHeigh*height;
+    wall->width = blockWidht*width;
     //salva a posição inicial da parede
     wall->x = x;
     wall->y = y;
@@ -413,14 +429,14 @@ void initWall(int height, int width, int x, int y){
         xBlock = wall->x;
         for(int j = 0; j < width; j++){
             //cria um GameObject_t do tipo bloco, com posição (x, y)
-            wall->blocks[index] = initGameObject(xBlock,yBlock, 0, 0, BLOCK, BLOCK_H, BLOCK_W);
+            wall->blocks[index] = initGameObject(xBlock,yBlock, 0, 0, BLOCK, blockHeigh, blockWidht);
             wall->blocks[index].direction = direction;
             //incrementa indice e posição x
             index++;
-            xBlock+= BLOCK_W;
+            xBlock+= blockWidht;
         }
         //incrementa posição y e verifica qual a direção da próxima linha
-        yBlock+=BLOCK_H;
+        yBlock+=blockHeigh;
         direction = direction == 0 ? 1 : 0;
     }
 }
@@ -428,11 +444,11 @@ void initWall(int height, int width, int x, int y){
 /*
 * As configurações do mapa são determinadas no arquivo "resources/config.txt"
 * que contém a estrutura
-* |Quant                             |
-* |altura largura posicão_x posição_y|
+* |Quant                                   |
+* |altura largura posicão_x posição_y, tipo|
 * sendo Quant, a quantidade de paredes no mapa
-* e cada linha seguinte corresponde a altura, largura (ambas em blocos), 
-* posição eixo X e Y, sequêncialmente.
+* e cada linha seguinte corresponde, respectivamente a, altura, largura (ambas em unidade de blocos), 
+* posição eixo X, posição eixo Y e tipo da parede (tijolo, pedra ou arbusto).
 */
 void initMap(){
     //Abre arquivo com as configurações do mapa
@@ -458,40 +474,34 @@ void initMap(){
     }
     game.mapQuant = 0;
     //Cria as paredes do mapa
-    int height, width, x, y;
+    int height, width, x, y, type;
     for(int i = 0; i < quantWalls; i++){
         //Lê as configurações das paredes
-        if(fscanf(arq, "%d %d %d %d", &height, &width, &x, &y) != 4){
+        if(fscanf(arq, "%d %d %d %d %d", &height, &width, &x, &y, &type) != 5){
             fprintf(stderr, "[ERRO INTERNO]: Erro ao ler arquivo %s, número de entradas inválido.\n", filename);
             exit(1);
         }
         //Cria as paredes
-        initWall(height, width, x, y);
+        initWall(height, width, x, y, type);
     }
-}
-void copyGameObject(GameObject_t *dest, GameObject_t *source){
-    dest->x = source->x;
-    dest->y = source->y;
-    dest->dx = source->dx;
-    dest->dy = source->dy;
-    dest->type = source->type;
-    dest->life = source->life;
-    dest->height = source->height;
-    dest->widht = source->widht;
 }
 
 int updateMap(Game_t *game, GameObject_t *exploded){
     int explodedCount = 0;
     for(int i = 0; i < game->mapQuant; i++){
         Wall_t *wall = &game->map[i];
-        for(int j = 0; j < wall->quantBlock; j++){
-            GameObject_t *block;
-            block = &wall->blocks[j];
-            if(colisionWithShot(block, game->shots, game->shotsQuant, SHOT)
-                || colisionWithShot(block, game->shots, game->shotsQuant, ENEMIE_SHOT)){
-                copyGameObject(&exploded[explodedCount], block);
-                explodedCount++;
-                wall->quantBlock = hardKill(wall->blocks, wall->quantBlock, j);
+        if((wall->type == BRICK) || (wall->type == STONE)){
+            for(int j = 0; j < wall->quantBlock; j++){
+                GameObject_t *block;
+                block = &wall->blocks[j];
+                if(colisionWithShot(block, game->shots, game->shotsQuant, SHOT)
+                    || colisionWithShot(block, game->shots, game->shotsQuant, ENEMIE_SHOT)){
+                    if(wall->type==BRICK){
+                        copyGameObject(&exploded[explodedCount], block);
+                        explodedCount++;
+                        wall->quantBlock = hardKill(wall->blocks, wall->quantBlock, j);
+                    }
+                }
             }
         }
 
@@ -507,8 +517,9 @@ int shoot(GameObject_t *shooter, int index){
     GameObject_t *shot;
     shot = &(game.shots[index]);
     // Verifica se já não existe tiro
-    if(isAlive(shot))
+    if(isAlive(shot)){
         return 0;
+    }
     
     int positionOffsetY = shot->height/2;
     int positionOffsetX = shot->widht/2;
@@ -539,7 +550,9 @@ int isInBattleField(int x, int y, int heigh, int widht){
     return 1;
 }
 
-int updateShots(Game_t *game){
+int updateShots(Game_t *game, GameObject_t *exploded){
+    int quantExploded = 0;
+    //Verifica e movimenta o tiro
     for(int i = 0; i < game->shotsQuant; i++){
         GameObject_t *shot = &game->shots[i];
         if(isAlive(shot)){
@@ -547,11 +560,17 @@ int updateShots(Game_t *game){
             //Verifica se a nova posição esta dentro do campo
             if(!isInBattleField(shot->x, shot->y, shot->height, shot->widht)){
                 softKill(shot);
-                return i;
+                copyGameObject(&exploded[quantExploded], shot);
+                quantExploded++;
             }
         }
     }
 
-    return -1;
+    //Verifica se um tiro colidiu com outro
+    if(colisionWithShot(&game->shots[TANK_SHOT_INDEX], game->shots, game->shotsQuant, ENEMIE_SHOT)){
+        softKill(&game->shots[TANK_SHOT_INDEX]);
+    }
+
+    return quantExploded;
 }
 

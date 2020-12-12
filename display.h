@@ -18,7 +18,7 @@
 #define EXPLOSION_FRAMES 3
 #define CREATION_FRAMES 6
 
-enum sprite_type {SPRITE_TANK, SPRITE_ENEMIES, SPRITE_BLOCK, SPRITE_EAGLE, SPRITE_FLAG, SPRITE_SHOT};
+enum sprite_type {SPRITE_BRICK, SPRITE_STONE, SPRITE_BUSH};
 
 enum sprite_directions {SPRITE_UP, SPRITE_DOWN, SPRITE_LEFT, SPRITE_RIGHT};
 
@@ -35,6 +35,9 @@ typedef struct SPRITES
     ALLEGRO_BITMAP* creation[CREATION_FRAMES];
 
     ALLEGRO_BITMAP* block[2];
+    ALLEGRO_BITMAP* stone;
+    ALLEGRO_BITMAP* bush;
+
     ALLEGRO_BITMAP* eagle;
     ALLEGRO_BITMAP* flag;
 } Sprites_t;
@@ -111,6 +114,11 @@ void beforeDraw();
 * desenha um sprite na tela, nas posições (x, y)
 */
 void drawDisplay(GameObject_t *obj);
+
+/*
+* desenha um sprite na tela, nas posições (x, y)
+*/
+void drawWall(GameObject_t *obj, int typeWall);
 
 void drawInfo();
 

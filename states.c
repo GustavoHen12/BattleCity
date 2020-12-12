@@ -1,6 +1,11 @@
 #include "states.h"
 
 // ------------ Funções auxiliares ------------
+void resetCicle(int *cicle){
+    if(*cicle > 180){
+        *cicle = 0;
+    }
+}
 
 int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
     if(key[ALLEGRO_KEY_LEFT])
@@ -34,15 +39,61 @@ void drawGame(Game_t *game){
 
     //Desenha mapa
     for(int i = 0; i < game->mapQuant; i++){
-        Wall_t wall = game->map[i];
-        for(int j = 0; j < wall.quantBlock; j++){
-            drawDisplay(&wall.blocks[j]);
+        Wall_t *wall = &game->map[i];
+        for(int j = 0; j < wall->quantBlock; j++){
+            drawWall(&wall->blocks[j], wall->type);
         }
     }
 
     //Desenha efeitos
     fx_draw();
 }
+
+void processGame(Game_t *game, int input, int cicle){
+    updateTank(input);
+    //atira
+    if(key[ALLEGRO_KEY_Z]){
+        if(shoot(&game->tank, TANK_SHOT_INDEX))
+            playSound(FX_TYPE_SHOT);
+    }
+
+    int deadEnemie = updateEnemies(game); 
+    if(deadEnemie >= 0){
+        int x, y;
+        getMiddlePosition(game->enemies, deadEnemie, &x, &y);
+        fx_add(x, y, FX_TYPE_EXPLOSION);
+        playSound(FX_TYPE_EXPLOSION);
+    }
+
+    GameObject_t explodedShots[10];
+    int quantExplodedShots = updateShots(game, explodedShots); 
+    for(int i = 0; i < quantExplodedShots; i++){
+        int x, y;
+        getMiddlePosition(explodedShots, i, &x, &y);
+        fx_add(x, y, FX_TYPE_EXPLOSION);
+    }
+
+    if(sendEnemie(game, &cicle)){
+        int x, y;
+        getInitialPosition(&x, &y, ENEMIES, positionNextEnemie);
+        //cria efeito do nascimento
+        fx_add(x+8, y+8, FX_TYPE_CREATION);
+        playSound(FX_TYPE_CREATION);
+    }
+
+    if(fx_finished(FX_TYPE_CREATION)){
+        crateEnemie(game->enemies, game->enemiesQuant, &positionNextEnemie);
+    }
+
+    GameObject_t explodedBlocks[10];
+    int quantExplodedBlocks = updateMap(game, explodedBlocks);
+    for(int i = 0; i < quantExplodedBlocks; i++){
+        int x, y;
+        getMiddlePosition(explodedBlocks, i, &x, &y);
+        fx_add(x, y, FX_TYPE_EXPLOSION);
+    }
+}
+
 // ------------ Funções de estado ------------
 
 void start(){
@@ -85,8 +136,8 @@ void play(){
                 updateTank(input);
                 //atira
                 if(key[ALLEGRO_KEY_Z]){
-                    shoot(&game.tank, 3);
-                    playSound(FX_TYPE_SHOT);
+                    if(shoot(&game.tank, TANK_SHOT_INDEX))
+                        playSound(FX_TYPE_SHOT);
                 }
 
                 int deadEnemie = updateEnemies(&game); 
@@ -94,12 +145,14 @@ void play(){
                     int x, y;
                     getMiddlePosition(game.enemies, deadEnemie, &x, &y);
                     fx_add(x, y, FX_TYPE_EXPLOSION);
+                    playSound(FX_TYPE_EXPLOSION);
                 }
 
-                int explodedShots = updateShots(&game); 
-                if(explodedShots >= 0){
+                GameObject_t explodedShots[10];
+                int quantExplodedShots = updateShots(&game, explodedShots); 
+                for(int i = 0; i < quantExplodedShots; i++){
                     int x, y;
-                    getMiddlePosition(game.shots, explodedShots, &x, &y);
+                    getMiddlePosition(explodedShots, i, &x, &y);
                     fx_add(x, y, FX_TYPE_EXPLOSION);
                 }
 
@@ -107,22 +160,20 @@ void play(){
                     int x, y;
                     getInitialPosition(&x, &y, ENEMIES, positionNextEnemie);
                     //cria efeito do nascimento
-                    fx_add(x, y+8, FX_TYPE_CREATION);
+                    fx_add(x+8, y+8, FX_TYPE_CREATION);
+                    playSound(FX_TYPE_CREATION);
                 }
 
                 if(fx_finished(FX_TYPE_CREATION)){
                     crateEnemie(game.enemies, game.enemiesQuant, &positionNextEnemie);
                 }
 
-                int quantExplodedBlocks = 0;
                 GameObject_t explodedBlocks[10];
-                quantExplodedBlocks = updateMap(&game, explodedBlocks);
-                if(quantExplodedBlocks > 0){
-                    for(int i = 0; i < quantExplodedBlocks; i++){
-                        int x, y;
-                        getMiddlePosition(explodedBlocks, i, &x, &y);
-                        fx_add(x, y, FX_TYPE_EXPLOSION);
-                    }
+                int quantExplodedBlocks = updateMap(&game, explodedBlocks);
+                for(int i = 0; i < quantExplodedBlocks; i++){
+                    int x, y;
+                    getMiddlePosition(explodedBlocks, i, &x, &y);
+                    fx_add(x, y, FX_TYPE_EXPLOSION);
                 }
 
                 fx_update();
@@ -166,7 +217,7 @@ void play(){
             redraw = false;
         }
         cicle++;
-        //resetCicle();
+        resetCicle(&cicle);
     }
     closeDisplay();
     state = 8;

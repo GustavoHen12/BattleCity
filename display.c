@@ -88,6 +88,8 @@ void initSprites()
     
     sprites.block[0] = sprite_grab(96, 264, BLOCK_W, BLOCK_H);
     sprites.block[1] = sprite_grab(184, 264, BLOCK_W, BLOCK_H);
+    sprites.stone = sprite_grab(0, 272, BLOCK_W, BLOCK_H*2);
+    sprites.bush = sprite_grab(0, 304, BLOCK_W, BLOCK_H*2);
 
     sprites.explosion[0] = sprite_grab(255, 64, 32, 35);
     sprites.explosion[1] = sprite_grab(290, 64, 32, 45);
@@ -150,6 +152,27 @@ void drawDisplay (GameObject_t *obj){
     al_draw_bitmap(sprite, x, y, 0);
 }
 
+void drawWall(GameObject_t *obj, int typeWall){
+    int direction = obj->direction;
+    int x = obj->x, y = obj->y;
+    //desenha o sprite "sprite" na tela na posicação (x, y)
+    ALLEGRO_BITMAP* sprite;
+    switch (typeWall){
+        case SPRITE_BRICK:
+            sprite = sprites.block[direction];
+            break;
+        case SPRITE_STONE:
+            sprite = sprites.stone;
+            break;
+        case SPRITE_BUSH:
+            sprite = sprites.bush;
+            break;
+    default:
+        break;
+    }
+    al_draw_bitmap(sprite, x, y, 0);
+}
+
 void drawInfo(){
     //desenha margem
     // al_draw_filled_rectangle(BATTLE_FIELD_W, 0, DISPLAY_WIDHT, DISPLAY_HEIGH, al_map_rgb(153, 153, 153));
@@ -174,12 +197,12 @@ void closeDisplay(){
 }
 
 void playSound(int type){
-    if(type == FX_TYPE_CREATION)
-        al_play_sample(sounds.creation, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-    if(type == FX_TYPE_EXPLOSION)
-        al_play_sample(sounds.explosion, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-    if(type == FX_TYPE_SHOT)
-        al_play_sample(sounds.shot, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+    // if(type == FX_TYPE_CREATION)
+    //     al_play_sample(sounds.creation, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+    // if(type == FX_TYPE_EXPLOSION)
+    //     al_play_sample(sounds.explosion, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+    // if(type == FX_TYPE_SHOT)
+    //     al_play_sample(sounds.shot, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 }
 
 // ------------ Efeitos -----------
@@ -193,9 +216,6 @@ void fx_init()
 
 void fx_add(int x, int y, int type)
 {
-    // ALLEGRO_SAMPLE *sound;
-    playSound(type);
-
     for(int i = 0; i < FX_N; i++)
     {
         if(fx[i].used)

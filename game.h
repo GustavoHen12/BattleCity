@@ -12,10 +12,14 @@
 #define MAX_SHOOT_SIZE 200
 #define INTERVAL_GENERATE_ENEMIES 180
 #define ENEMIES_QUANT 4
+#define SHOTS_QUANT 5
+#define TANK_SHOT_INDEX (SHOTS_QUANT-1)
+
+enum type_wall {BRICK, STONE, BUSH};
 
 typedef struct{
     GameObject_t *blocks;
-    int x, y, height, width, quantBlock;
+    int x, y, height, width, quantBlock, type;
 } Wall_t;
 
 typedef struct{
@@ -49,7 +53,7 @@ void nextCicle(int *cicle);
 //atira
 int shoot(GameObject_t *shooter, int index);
 
-int updateShots(Game_t *game);
+int updateShots(Game_t *game, GameObject_t *exploded);
 
 int updateEnemies(Game_t *game);
 
