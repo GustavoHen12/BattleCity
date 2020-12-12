@@ -14,12 +14,7 @@ int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
     return -1;
 }
 
-void drawGame(Game_t *game){
-    // Configurações iniciais
-    beforeDraw();
-    
-    //TODO: Desenha borda e conteudos estáticos
-    
+void drawGame(Game_t *game){    
     // Desenha Tank
     drawDisplay(&game->tank);
     
@@ -47,9 +42,6 @@ void drawGame(Game_t *game){
 
     //Desenha efeitos
     fx_draw();
-
-    //Exibe na tela
-    showDraw();
 }
 // ------------ Funções de estado ------------
 
@@ -68,15 +60,19 @@ void play(){
    
     int input = -1;
     int cicle = 0;
+    // int positionNextEnemie = 0;
+    
     //laço principal
     bool done = false;
     bool redraw = true;
+    
     TimerEvent_t event;
+    
     unsigned char key[ALLEGRO_KEY_MAX];
     memset(key, 0, sizeof(key));
+    
     fx_init();
     startFPS();
-
     while(1){
         al_wait_for_event(queue, &event);
         switch(event.type)
@@ -92,15 +88,21 @@ void play(){
                 if(deadEnemie >= 0){
                     int x, y;
                     getMiddlePosition(game.enemies, deadEnemie, &x, &y);
-                    fx_add(x, y);
+                    fx_add(x, y, FX_TYPE_EXPLOSION);
                 }
 
                 int explodedShots = updateShots(&game); 
                 if(explodedShots >= 0){
                     int x, y;
                     getMiddlePosition(game.shots, explodedShots, &x, &y);
-                    fx_add(x, y);
+                    fx_add(x, y, FX_TYPE_EXPLOSION);
                 }
+
+                if(sendEnemie(&game, cicle)){
+                    //cria efeito do nascimento
+                }
+                //if(fxFineshed) addEnemie();
+                // para fazer o fxFineshed é só lembrar q 2 inimigos não podem nascer ao mesmo tempo
 
                 int quantExplodedBlocks = 0;
                 GameObject_t explodedBlocks[10];
@@ -109,7 +111,7 @@ void play(){
                     for(int i = 0; i < quantExplodedBlocks; i++){
                         int x, y;
                         getMiddlePosition(explodedBlocks, i, &x, &y);
-                        fx_add(x, y);
+                        fx_add(x, y, FX_TYPE_EXPLOSION);
                     }
                 }
 
@@ -140,7 +142,17 @@ void play(){
             break;
         
         if(redraw && al_is_event_queue_empty(queue)){
+            //Configurações iniciais
+            beforeDraw();
+
+            //Desenha objetos do jogo
             drawGame(&game);
+            
+            //Desenha margem
+            drawInfo();
+
+            //Exibe na tela
+            showDraw();
             redraw = false;
         }
         cicle++;

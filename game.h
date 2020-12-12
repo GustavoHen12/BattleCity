@@ -51,9 +51,6 @@ int shoot(GameObject_t *shooter, int index);
 
 int updateShots(Game_t *game);
 
-//veirifa colisao
-
-
 int updateEnemies(Game_t *game);
 
 //adiciona inimigo
@@ -66,5 +63,7 @@ void initMap();
 int updateMap(Game_t *game, GameObject_t *exploded);
 
 void getMiddlePosition(GameObject_t *obj, int index, int *x, int *y);
+
+int sendEnemie(Game_t *game, int cicle);
 
 #endif

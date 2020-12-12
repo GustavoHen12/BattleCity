@@ -198,16 +198,14 @@ void move(GameObject_t *object, int direction){
 * verifica se a posição para qual o objeto pretende ir já esta ocupada
 */
 int positionEnable(int posX, int posY, int height, int widht){
-    // #define DISPLAY_HEIGH 500
-    // #define DISPLAY_WIDHT 650   
     //verifica se esta dentro do campo
     if(posX < 0)
         return 0;
-    if(posX+widht > 650)
+    if(posX+widht > BATTLE_FIELD_W)
         return 0;
     if(posY < 0)
         return 0;
-    if(posY + height > 500)
+    if(posY + height > BATTLE_FIELD_H)
         return 0;
 
     //verifica se esta dentro de alguma parede
@@ -391,7 +389,7 @@ void initMap(){
     //Cria as paredes do mapa
     int height, width, x, y;
     for(int i = 0; i < quantWalls; i++){
-        //Lễ as configurações das paredes
+        //Lê as configurações das paredes
         if(fscanf(arq, "%d %d %d %d", &height, &width, &x, &y) != 4){
             fprintf(stderr, "[ERRO INTERNO]: Erro ao ler arquivo %s, número de entradas inválido.\n", filename);
             exit(1);
@@ -408,7 +406,8 @@ int updateMap(Game_t *game, GameObject_t *exploded){
         for(int j = 0; j < wall->quantBlock; j++){
             GameObject_t *block;
             block = &wall->blocks[j];
-            if(colisionWithShot(block, game->shots, game->shotsQuant, SHOT)){
+            if(colisionWithShot(block, game->shots, game->shotsQuant, SHOT)
+                || colisionWithShot(block, game->shots, game->shotsQuant, ENEMIE_SHOT)){
                 GameObject_t *explodedBlock = &exploded[explodedCount];
                 explodedBlock->x = block->x;
                 explodedBlock->y = block->y;
@@ -416,6 +415,10 @@ int updateMap(Game_t *game, GameObject_t *exploded){
                 wall->quantBlock = hardKill(wall->blocks, wall->quantBlock, j);
             }
         }
+
+        //TODO:
+        //if(wall->quantBlock == 0)
+        //  free(wall);
     }
     return explodedCount;
 }

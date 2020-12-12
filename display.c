@@ -62,8 +62,8 @@ ALLEGRO_BITMAP* sprite_grab(int x, int y, int w, int h)
 
 void initSprites()
 {
-    //sprites._sheet = al_load_bitmap("resources/spritesheet_battleCity.png");
-    sprites._sheet = al_load_bitmap("resources/sprite.bmp");
+    sprites._sheet = al_load_bitmap("resources/spritesheet_battleCity.png");
+    //sprites._sheet = al_load_bitmap("resources/sprite.bmp");
     check(sprites._sheet, "spritesheet");
 
     sprites.tank[SPRITE_UP] = sprite_grab(2, 2, TANK_W, TANK_H);
@@ -80,13 +80,20 @@ void initSprites()
     sprites.shots[SPRITE_RIGHT] = sprite_grab(8, 352, SHOT_W, SHOT_H);
     sprites.shots[SPRITE_DOWN] = sprite_grab(16, 350, SHOT_W, SHOT_H);
     sprites.shots[SPRITE_LEFT] = sprite_grab(24, 352, SHOT_W, SHOT_H);
+    
+    sprites.block[0] = sprite_grab(96, 264, BLOCK_W, BLOCK_H);
+    sprites.block[1] = sprite_grab(184, 264, BLOCK_W, BLOCK_H);
 
     sprites.explosion[0] = sprite_grab(255, 64, 32, 35);
     sprites.explosion[1] = sprite_grab(290, 64, 32, 45);
     sprites.explosion[2] = sprite_grab(320, 64, 45, 45);
-    
-    sprites.block[0] = sprite_grab(96, 264, BLOCK_W, BLOCK_H);
-    sprites.block[1] = sprite_grab(184, 264, BLOCK_W, BLOCK_H);
+
+    sprites.creation[0] = sprite_grab(258, 34, 30, 30);
+    sprites.creation[1] = sprite_grab(288, 34, 30, 30);
+    sprites.creation[2] = sprite_grab(318, 34, 30, 30);
+    sprites.creation[3] = sprite_grab(352, 34, 30, 30);
+    sprites.creation[4] = sprite_grab(388, 34, 30, 30);
+    sprites.creation[5] = sprite_grab(418, 34, 30, 30);
 }
 
 int initDisplay (){
@@ -126,34 +133,11 @@ void drawDisplay (GameObject_t *obj){
     al_draw_bitmap(sprite, x, y, 0);
 }
 
-// void testaSprite( GameObject_t *obj, GameObject_t *obj2){
-//     printObject2(obj2);
-//     int type = obj->type;
-//     int direction = obj->direction;
-//     int x = obj->x, y = obj->y;
-//     //desenha o sprite "sprite" na tela na posicação (x, y)
-//     if(obj->type != ENEMIE_SHOT){
-//         ALLEGRO_BITMAP* sprite = sprites.shots[direction];
-//         if(type == TANK){
-//             sprite = sprites.tank[direction];
-//         }
-//         if(type == ENEMIES){
-//             sprite = sprites.enemies[direction];
-//         }
-//         if(type == SHOT){
-//             sprite = sprites.shots[direction];
-//         }
-//         if(type == BLOCK){
-//             sprite = sprites.block[direction];
-//         }
-
-//         al_draw_bitmap(sprite, x, y, 0);
-//         // al_draw_line(x, y, x, y+obj->height, al_map_rgb_f(1, 1, 0), 1);
-//         // al_draw_line(x, y, x+obj->widht, y, al_map_rgb_f(1, 1, 0), 1);
-//         // al_draw_line(x, y+obj->height, x+obj->widht, y+obj->height, al_map_rgb_f(1, 1, 0), 1);
-//         // al_draw_line(x+obj->widht, y, x+obj->widht, y+obj->height, al_map_rgb_f(1, 1, 0), 1);
-//     }
-// }
+void drawInfo(){
+    //desenha margem
+    // al_draw_filled_rectangle(BATTLE_FIELD_W, 0, DISPLAY_WIDHT, DISPLAY_HEIGH, al_map_rgb(153, 153, 153));
+    al_draw_filled_rectangle(BATTLE_FIELD_W, 0, DISPLAY_WIDHT, DISPLAY_HEIGH, al_map_rgb(38, 38, 38));
+}
 
 void beforeDraw(){
     al_clear_to_color(al_map_rgb(0, 0, 0));
@@ -181,7 +165,7 @@ void fx_init()
         fx[i].used = false;
 }
 
-void fx_add(int x, int y)
+void fx_add(int x, int y, int type)
 {
     for(int i = 0; i < FX_N; i++)
     {
@@ -192,6 +176,7 @@ void fx_add(int x, int y)
         fx[i].y = y;
         fx[i].frame = 0;
         fx[i].used = true;
+        fx[i].type = type;
         return;
     }
 }
@@ -204,9 +189,13 @@ void fx_update()
             continue;
 
         fx[i].frame++;
-
-        if(fx[i].frame == (EXPLOSION_FRAMES * 8))
-            fx[i].used = false;
+        if(fx[i].type == FX_TYPE_CRATION){
+            if(fx[i].frame == (CREATION_FRAMES * 8))
+                fx[i].used = false;
+        }else{
+            if(fx[i].frame == (EXPLOSION_FRAMES * 8))
+                fx[i].used = false;
+        }
     }
 }
 
@@ -218,7 +207,9 @@ void fx_draw()
             continue;
 
         int frame_display = fx[i].frame / 8;
-        ALLEGRO_BITMAP *bmp =  sprites.explosion[frame_display];
+        ALLEGRO_BITMAP *bmp = fx[i].type == FX_TYPE_CRATION ? 
+                                            sprites.creation[frame_display]
+                                            :sprites.explosion[frame_display];
 
         int x = fx[i].x - (al_get_bitmap_width(bmp) / 2);
         int y = fx[i].y - (al_get_bitmap_height(bmp) / 2);

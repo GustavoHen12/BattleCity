@@ -13,13 +13,8 @@
 // ------------ Sprites ------------
 //define tamanho dos sprites(px)
 
-#define EAGLE_H
-#define EAGLE_W
-
-#define FLAG_H
-#define FLAG_W
-
 #define EXPLOSION_FRAMES 3
+#define CREATION_FRAMES 6
 
 enum sprite_type {SPRITE_TANK, SPRITE_ENEMIES, SPRITE_BLOCK, SPRITE_EAGLE, SPRITE_FLAG, SPRITE_SHOT};
 
@@ -34,7 +29,8 @@ typedef struct SPRITES
 
     ALLEGRO_BITMAP* shots[4];
 
-    ALLEGRO_BITMAP* explosion[4];
+    ALLEGRO_BITMAP* explosion[EXPLOSION_FRAMES];
+    ALLEGRO_BITMAP* creation[CREATION_FRAMES];
 
     ALLEGRO_BITMAP* block[2];
     ALLEGRO_BITMAP* eagle;
@@ -52,8 +48,8 @@ ALLEGRO_DISPLAY* screen;
 ALLEGRO_FONT* font;
 
 //configurações da tela
-#define DISPLAY_HEIGH 500
-#define DISPLAY_WIDHT 650
+#define DISPLAY_HEIGH 425
+#define DISPLAY_WIDHT 550
 
 #define KEY_SEEN     1
 #define KEY_RELEASED 2
@@ -61,12 +57,16 @@ ALLEGRO_FONT* font;
 typedef ALLEGRO_EVENT TimerEvent_t;
 
 // ------------ Efeitos ------------
+#define FX_TYPE_EXPLOSION 0
+#define FX_TYPE_CRATION 1
+
 typedef struct FX
 {
     int x, y;
     int frame;
     bool spark;
     bool used;
+    int type;
 } FX;
 
 #define FX_N 128
@@ -75,7 +75,7 @@ FX fx[FX_N];
 void fx_init();
 void fx_draw();
 void fx_update();
-void fx_add(int x, int y);
+void fx_add(int x, int y, int type);
 
 /*
 * Esta funcao inicia um display de DISPLAY_HEIGHxDISPLAY_WIDHT
@@ -99,6 +99,8 @@ void beforeDraw();
 */
 void drawDisplay(GameObject_t *obj);
 
+void drawInfo();
+
 /*
 * Exibe as imagens que foram desenhadas na tela
 */
@@ -114,8 +116,5 @@ void closeDisplay();
 */
 void spritesInit();
 
-/*
-
-*/
 void testaSprite( GameObject_t *obj, GameObject_t *obj2);
 #endif

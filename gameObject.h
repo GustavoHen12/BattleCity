@@ -10,11 +10,14 @@
 #define SHOT_H 9
 #define SHOT_W 8
 
-#define BATTLE_FIELD_H 500
-#define BATTLE_FIELD_W 650
+#define BATTLE_FIELD_H 425
+#define BATTLE_FIELD_W 434
 
 #define BLOCK_H 8
 #define BLOCK_W 16
+
+#define EAGLE_H
+#define EAGLE_W
 
 // #define BLOCK_H 8
 // #define BLOCK_W 22
