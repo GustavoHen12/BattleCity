@@ -86,36 +86,36 @@ void getMiddlePosition(GameObject_t *obj, int index, int *x, int *y){
 
 // ------------ Funções jogo genéricas ------------
 
-void InitGame(){
+void initGame(Game_t *game){
     //INICIA TANK
-    game.tank = initGameObject(0, 0, 2, 2, TANK, TANK_H, TANK_W);
-    testMalloc(&(game.tank), "tank");
+    game->tank = initGameObject(0, 0, 2, 2, TANK, TANK_H, TANK_W);
+    testMalloc(&(game->tank), "tank");
 
     //Aloca espaco para os inimigos e testa
-    game.enemies = malloc(sizeof(GameObject_t)*ENEMIES_QUANT);
-    testMalloc(game.enemies, "inimigos");
+    game->enemies = malloc(sizeof(GameObject_t)*ENEMIES_QUANT);
+    testMalloc(game->enemies, "inimigos");
     //Inicia a quantidade de inimigos em jogo para 0
-    game.enemiesQuant = ENEMIES_QUANT;
+    game->enemiesQuant = ENEMIES_QUANT;
     //configura posições iniciais
     for(int i = 0; i < ENEMIES_QUANT; i++){
-        game.enemies[i] = initGameObject(3, 3, 1, 1, ENEMIES, ENEMIES_H, ENEMIES_W);
-        game.enemies[i].life = 0;
+        game->enemies[i] = initGameObject(3, 3, 1, 1, ENEMIES, ENEMIES_H, ENEMIES_W);
+        game->enemies[i].life = 0;
     }
 
     //Aloca espaço para tiros
-    game.shotsQuant = SHOTS_QUANT;
-    game.shots = malloc(sizeof(GameObject_t)*game.shotsQuant);
-    testMalloc(game.shots, "tiros");
+    game->shotsQuant = SHOTS_QUANT;
+    game->shots = malloc(sizeof(GameObject_t)*game->shotsQuant);
+    testMalloc(game->shots, "tiros");
     //Inicia os tiros que pertence ao inimigo
-    for(int i = 0; i < game.shotsQuant; i++){
-        game.shots[i] = initGameObject(0, 0, 3, 3, ENEMIE_SHOT, SHOT_H, SHOT_W);
-        game.shots[i].life = 0;
+    for(int i = 0; i < game->shotsQuant; i++){
+        game->shots[i] = initGameObject(0, 0, 3, 3, ENEMIE_SHOT, SHOT_H, SHOT_W);
+        game->shots[i].life = 0;
     }
     //Inicia o tiro que pertence ao TANK
-    game.shots[TANK_SHOT_INDEX].type = SHOT;
+    game->shots[TANK_SHOT_INDEX].type = SHOT;
  
     //Inicia mapa do Jogo
-    initMap();
+    initMap(game);
 
     srand(time(NULL));
 }
@@ -225,7 +225,7 @@ void move(GameObject_t *object, int direction){
 /*
 * verifica se a posição para qual o objeto pretende ir já esta ocupada
 */
-int positionEnable(int posX, int posY, int height, int widht){
+int positionEnable(Game_t *game, int posX, int posY, int height, int widht){
     //verifica se esta dentro do campo
     if(posX < 0)
         return 0;
@@ -237,8 +237,8 @@ int positionEnable(int posX, int posY, int height, int widht){
         return 0;
 
     //verifica se esta dentro de alguma parede
-    for(int i = 0; i < game.mapQuant; i++){
-        Wall_t wall = game.map[i];
+    for(int i = 0; i < game->mapQuant; i++){
+        Wall_t wall = game->map[i];
         if(wall.type != BUSH){
             if(colision(posX, posY, height, widht, wall.x, wall.y, wall.height, wall.width)){
                 for(int j = 0; j < wall.quantBlock; j++){
@@ -299,7 +299,7 @@ void updateTank(Game_t *game, int direction){
             default:
                 break;
         }
-        if(positionEnable(newX, newY, 28, 28) != 0){
+        if(positionEnable(game, newX, newY, 28, 28) != 0){
             move(&game->tank, direction);
         }
     }
@@ -320,7 +320,7 @@ int updateEnemies(Game_t *game){
             else 
                 newX += enemie.dx;
             //verifica se o tank pode continuar indo na mesma direção
-            if((positionEnable(newX, newY, 28, 28) != 0)
+            if((positionEnable(game, newX, newY, 28, 28) != 0)
                 && !colisionWithTank(&enemie, game, newX, newY, ENEMIES, i)){
                 move(&(game->enemies[i]), enemie.direction);
             }else{
@@ -343,7 +343,7 @@ int updateEnemies(Game_t *game){
                 softKill(enemie);
                 return i;
             } else {
-                shoot(enemie, i);
+                shoot(enemie, game->shots, i);
             }
         }
         i++;
@@ -385,7 +385,7 @@ int crateEnemie(GameObject_t *enemies, int quant, int *position){
 * "height"x"widht", configura o tamanho do parede a ser criada (em blocos NÃO EM PIXELS)
 * esta parede terá como posição superior esquerdo (x, y)
 */
-void initWall(int height, int width, int x, int y, int type){
+void initWall(Wall_t *wall, int height, int width, int x, int y, int type){
     // Estas variaveis são iniciadas, porque o tamanho do bloco varia conforme
     // o tipo da parede
     int blockHeigh = BLOCK_H, blockWidht = BLOCK_W;
@@ -393,13 +393,7 @@ void initWall(int height, int width, int x, int y, int type){
         blockHeigh *= 2;
     }
 
-    //incrementa quantidade de paredes no mapa
-    game.mapQuant++;
-
-    //Cria parede:
-    //Pega ponteiro para a parede que será criada
-    Wall_t *wall = &(game.map[game.mapQuant - 1]);
-    
+    //Cria parede:    
     //salva o tipo da parede
     wall->type = type;
 
@@ -450,7 +444,7 @@ void initWall(int height, int width, int x, int y, int type){
 * e cada linha seguinte corresponde, respectivamente a, altura, largura (ambas em unidade de blocos), 
 * posição eixo X, posição eixo Y e tipo da parede (tijolo, pedra ou arbusto).
 */
-void initMap(){
+void initMap(Game_t *game){
     //Abre arquivo com as configurações do mapa
     char filename[25] = "resources/config.txt"; 
     FILE* arq;
@@ -467,12 +461,12 @@ void initMap(){
             exit(1);
     }
     //Aloca espaço para o mapa
-    game.map = malloc(sizeof(Wall_t)*quantWalls);
-    if(!game.map){
+    game->map = malloc(sizeof(Wall_t)*quantWalls);
+    if(!game->map){
         fprintf(stderr, "[ERRO INTERNO]: Não foi possível alocar espaço para o mapa\n");
         exit(1);
     }
-    game.mapQuant = 0;
+    game->mapQuant = 0;
     //Cria as paredes do mapa
     int height, width, x, y, type;
     for(int i = 0; i < quantWalls; i++){
@@ -481,8 +475,10 @@ void initMap(){
             fprintf(stderr, "[ERRO INTERNO]: Erro ao ler arquivo %s, número de entradas inválido.\n", filename);
             exit(1);
         }
-        //Cria as paredes
-        initWall(height, width, x, y, type);
+        //Cria a parede
+        initWall(&(game->map[game->mapQuant]), height, width, x, y, type);
+        //incrementa quantidade de paredes no mapa
+        game->mapQuant++;
     }
 }
 
@@ -513,9 +509,9 @@ int updateMap(Game_t *game, GameObject_t *exploded){
 }
 
 // ------------ Tiro ------------
-int shoot(GameObject_t *shooter, int index){
+int shoot(GameObject_t *shooter, GameObject_t *shots, int index){
     GameObject_t *shot;
-    shot = &(game.shots[index]);
+    shot = &(shots[index]);
     // Verifica se já não existe tiro
     if(isAlive(shot)){
         return 0;

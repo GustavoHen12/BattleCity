@@ -24,8 +24,6 @@ enum sprite_directions {SPRITE_UP, SPRITE_DOWN, SPRITE_LEFT, SPRITE_RIGHT};
 
 typedef struct SPRITES
 {
-    ALLEGRO_BITMAP* _sheet;
-
     ALLEGRO_BITMAP* tank[4];
     ALLEGRO_BITMAP* enemies[4];
 
@@ -39,7 +37,6 @@ typedef struct SPRITES
     ALLEGRO_BITMAP* bush;
 
     ALLEGRO_BITMAP* eagle;
-    ALLEGRO_BITMAP* flag;
 } Sprites_t;
 
 Sprites_t sprites;
@@ -51,6 +48,17 @@ typedef struct {
 } Sounds_t;
 
 Sounds_t sounds;
+// ------------ Menu ------------
+typedef struct {
+    ALLEGRO_BITMAP* logo;
+
+    char *help;
+    char *startGame;
+    char *finish;
+
+} MenuDisplayInfo_t;
+
+MenuDisplayInfo_t menuDisplay;
 
 // ------------ Variaveis globais e config do display ------------
 //inicia as variáveis globais que serão necessárias
@@ -59,6 +67,8 @@ ALLEGRO_TIMER* timer;
 ALLEGRO_EVENT_QUEUE* queue;
 ALLEGRO_DISPLAY* screen;
 ALLEGRO_FONT* font;
+
+ALLEGRO_BITMAP* _sheet;
 
 //configurações da tela
 #define DISPLAY_HEIGH 425
@@ -121,6 +131,20 @@ void drawDisplay(GameObject_t *obj);
 void drawWall(GameObject_t *obj, int typeWall);
 
 void drawInfo();
+
+void initSprites();
+
+void initMenuDisplay();
+
+void drawMenu();
+
+void drawHelp();
+
+void closeSound();
+
+void closeSprites();
+
+void closeMenu();
 
 /*
 * Exibe as imagens que foram desenhadas na tela

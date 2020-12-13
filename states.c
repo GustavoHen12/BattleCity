@@ -54,7 +54,7 @@ int processGame(Game_t *game, ProcessGameInfo_t *info){
     updateTank(game, info->input);
     //atira
     if(info->shot){
-        if(shoot(&game->tank, TANK_SHOT_INDEX))
+        if(shoot(&game->tank, game->shots, TANK_SHOT_INDEX))
             playSound(FX_TYPE_SHOT);
         info->shot = 0;
     } 
@@ -103,7 +103,65 @@ int processGame(Game_t *game, ProcessGameInfo_t *info){
 * Exibe menu
 */
 void start(){
-    state = INIT_STAGE;
+    initDisplay();
+    initMenuDisplay();
+
+    bool done = false;
+    bool redraw = true;
+    bool help = false;
+
+    TimerEvent_t event;
+    startFPS();
+    while(1){
+        al_wait_for_event(queue, &event);
+        switch(event.type)
+        {
+            case ALLEGRO_EVENT_TIMER:
+                redraw = true;
+                break;
+
+            case ALLEGRO_EVENT_KEY_DOWN:
+                if(event.keyboard.keycode == ALLEGRO_KEY_S){
+                    state = INIT_STAGE;
+                    done = true;
+                }
+                if(event.keyboard.keycode == ALLEGRO_KEY_H){
+                    help = true;
+                }
+                if(event.keyboard.keycode == ALLEGRO_KEY_M){
+                    help = false;
+                }
+
+                if(event.keyboard.keycode == ALLEGRO_KEY_ESCAPE){
+                    state = LEFT_GAME;
+                    done = true;
+                }
+                break;
+
+            case ALLEGRO_EVENT_DISPLAY_CLOSE:
+                state = LEFT_GAME;
+                done = true;
+                break;
+        }
+
+        if(done)
+            break;
+        
+        if(redraw && al_is_event_queue_empty(queue)){
+            //Configurações iniciais
+            beforeDraw();
+            if(help)
+                drawHelp();
+            else
+                drawMenu();
+
+            //Exibe na tela
+            showDraw();
+            redraw = false;
+        }
+    }
+
+    closeMenu();
 }
 
 /*
@@ -117,15 +175,17 @@ void init_stage(){
 * Jogo em si
 */
 void play(){
-    //instancia variaveis
-    InitGame();
-    initDisplay();
-    
+    Game_t game;
+
     ProcessGameInfo_t info = {
         .input = -1,
         .cicle = 0,
         .positionNextEnemy = 0
     };
+    
+    //instancia variaveis
+    initGame(&game);
+    initSprites();
 
     //laço principal
     bool done = false;
@@ -195,6 +255,12 @@ void play(){
         info.cicle++;
         resetCicle(&info.cicle);
     }
+    closeSound();
+    closeSprites();
+    state = LEFT_GAME;
+}
+
+void leftGame(){
     closeDisplay();
-    state = 8;
+    state = 208;
 }

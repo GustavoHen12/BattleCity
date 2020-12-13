@@ -44,6 +44,11 @@ int initConf () {
     check(al_init_acodec_addon(), "audio codecs");
     check(al_reserve_samples(16), "reserve samples");
 
+    //inicia spritesheet
+    _sheet = al_load_bitmap("resources/spritesheet_battleCity.png");
+    //sprites._sheet = al_load_bitmap("resources/sprite.bmp");
+    check(_sheet, "spritesheet");
+
     //Registra as fontes de eventos
     al_register_event_source(queue, al_get_keyboard_event_source());
     al_register_event_source(queue, al_get_display_event_source(screen));
@@ -59,7 +64,7 @@ int initConf () {
 ALLEGRO_BITMAP* sprite_grab(int x, int y, int w, int h)
 {
     //retira região da image
-    ALLEGRO_BITMAP* sprite = al_create_sub_bitmap(sprites._sheet, x, y, w, h);
+    ALLEGRO_BITMAP* sprite = al_create_sub_bitmap(_sheet, x, y, w, h);
     //verifica se a operação ocorreu de acordo e returna ponteiro para o sprite
     check(sprite, "sprite grab");
     return sprite;
@@ -67,10 +72,6 @@ ALLEGRO_BITMAP* sprite_grab(int x, int y, int w, int h)
 
 void initSprites()
 {
-    sprites._sheet = al_load_bitmap("resources/spritesheet_battleCity.png");
-    //sprites._sheet = al_load_bitmap("resources/sprite.bmp");
-    check(sprites._sheet, "spritesheet");
-
     sprites.tank[SPRITE_UP] = sprite_grab(2, 2, TANK_W, TANK_H);
     sprites.tank[SPRITE_RIGHT] = sprite_grab(2, 34, TANK_W, TANK_H);
     sprites.tank[SPRITE_DOWN] = sprite_grab(2, 65, TANK_W, TANK_H);
@@ -103,6 +104,33 @@ void initSprites()
     sprites.creation[5] = sprite_grab(418, 34, 30, 30);
 }
 
+void closeSprites(){
+    for(int i = 0; i < 4; i++){
+        al_destroy_bitmap(sprites.tank[i]);
+        al_destroy_bitmap(sprites.enemies[i]);
+        al_destroy_bitmap(sprites.shots[i]);
+    }
+
+    al_destroy_bitmap(sprites.stone);
+    al_destroy_bitmap(sprites.bush);
+    al_destroy_bitmap(sprites.block[0]);
+    al_destroy_bitmap(sprites.block[1]);
+
+    for(int i = 0; i < 6; i++){
+        if(i < 3)
+            al_destroy_bitmap(sprites.explosion[i]);
+        al_destroy_bitmap(sprites.creation[i]);
+    }
+
+    al_destroy_bitmap(sprites.eagle);
+}
+
+void closeSound(){
+    al_destroy_sample(sounds.explosion);
+    al_destroy_sample(sounds.creation);
+    al_destroy_sample(sounds.shot);
+}
+
 void initSound(){
     sounds.explosion = al_load_sample("resources/explosion.wav");
     check(sounds.explosion, "som explosão");
@@ -116,14 +144,45 @@ int initDisplay (){
     //inicia as configurações do display
     initConf();
 
-    //inicia sprites
-    initSprites();
-
     //inicia sons
     initSound();
 
     return 1;
 }
+
+void initMenuDisplay(){
+    // pega logo
+    menuDisplay.logo = sprite_grab(133, 275, 383, 143);
+
+    menuDisplay.startGame = malloc(sizeof(char)*30);
+    if(!menuDisplay.startGame){
+        fprintf(stderr, "Não foi possível alocar espaço para o texto de inicio do jogo !\n");
+        exit(1);
+    }
+    strcpy(menuDisplay.startGame, "Pressione 's' para começar");
+    
+    menuDisplay.help = malloc(sizeof(char)*30);
+    if(!menuDisplay.help){
+        fprintf(stderr, "Não foi possível alocar espaço para o texto de ajuda !\n");
+        exit(1);
+    }
+    strcpy(menuDisplay.help, "h - Ajuda");
+    
+    menuDisplay.finish = malloc(sizeof(char)*30);
+    if(!menuDisplay.help){
+        fprintf(stderr, "Não foi possível alocar espaço para o texto de sair !\n");
+        exit(1);
+    }
+    strcpy(menuDisplay.finish, "Esc - Sair");
+}
+
+void closeMenu(){
+    al_destroy_bitmap(menuDisplay.logo);
+    free(menuDisplay.startGame);
+    free(menuDisplay.finish);
+    free(menuDisplay.help);
+}
+
 
 void startFPS(){
     //inicia a contagem do timer
@@ -179,6 +238,49 @@ void drawInfo(){
     //al_draw_filled_rectangle(BATTLE_FIELD_W, 0, DISPLAY_WIDHT, DISPLAY_HEIGH, al_map_rgb(38, 38, 38));
 }
 
+void drawMenu(){
+    al_draw_bitmap(menuDisplay.logo, 85, 70, 0);
+    
+    int margin = 20;
+    int x = (DISPLAY_WIDHT/2) - (al_get_text_width(font, menuDisplay.startGame) / 2);
+    al_draw_text(font, al_map_rgb(255, 255, 255), x, 233, 0, menuDisplay.startGame);
+
+    al_draw_text(font, al_map_rgb(255, 255, 255), margin, DISPLAY_HEIGH - margin, 0, menuDisplay.help);
+    
+    x = DISPLAY_WIDHT - al_get_text_width(font, menuDisplay.finish) - margin;
+    al_draw_text(font, al_map_rgb(255, 255, 255), x, DISPLAY_HEIGH - margin, 0, menuDisplay.finish);
+}
+
+void drawHelp(){
+    /*
+    Instruções:
+    Utilize as setas para se mover a tecla z para atirar
+    A cada 3 seg. o valor em pontos para cada tank destruido diminui
+    Não permita que os inimigos destruam a àguia
+
+    Autor:
+    Gustavo H. da Silva Barbosa
+    UFPR
+    github.com/GustavoHen12
+
+    Cheat code: ghost
+    */
+
+    char instructions [] = "Instruções:\nUtilize as setas para se mover, e a tecla z para atirar\nA cada 3 seg. o valor em pontos para cada tank destruido diminui\nNão permita que os inimigos destruam a àguia";     
+    char author[] = "Autor:\nGustavo H. da Silva Barbosa\nUFPR\ngithub.com/GustavoHen12";
+    char cheatCode[] = "Cheat code: ghost";
+    char exit[] = "m - Voltar ao menu";
+
+    int margin = 20;
+    int sizeLine = al_get_font_line_height(font);
+    al_draw_multiline_text(font, al_map_rgb(255, 255, 255), margin, margin, DISPLAY_HEIGH - margin, sizeLine, ALLEGRO_ALIGN_LEFT, instructions);
+
+    al_draw_multiline_text(font, al_map_rgb(255, 255, 255), margin, (sizeLine*12) + margin, DISPLAY_HEIGH - margin, sizeLine, ALLEGRO_ALIGN_LEFT, author);
+    al_draw_text(font, al_map_rgb(255, 255, 255), margin, (sizeLine*20) + margin, 0, cheatCode);
+    
+    al_draw_text(font, al_map_rgb(255, 255, 255), margin, DISPLAY_HEIGH - margin, 0, exit);
+}
+
 void beforeDraw(){
     al_clear_to_color(al_map_rgb(0, 0, 0));
 }
@@ -193,21 +295,20 @@ void closeDisplay(){
     al_destroy_display(screen);
     al_destroy_timer(timer);
     al_destroy_event_queue(queue);
-    al_destroy_display(screen);
+    al_destroy_bitmap(_sheet);
 }
 
 void playSound(int type){
-    // if(type == FX_TYPE_CREATION)
-    //     al_play_sample(sounds.creation, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-    // if(type == FX_TYPE_EXPLOSION)
-    //     al_play_sample(sounds.explosion, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-    // if(type == FX_TYPE_SHOT)
-    //     al_play_sample(sounds.shot, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+    if(type == FX_TYPE_CREATION)
+        al_play_sample(sounds.creation, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+    if(type == FX_TYPE_EXPLOSION)
+        al_play_sample(sounds.explosion, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+    if(type == FX_TYPE_SHOT)
+        al_play_sample(sounds.shot, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 }
 
 // ------------ Efeitos -----------
 
-//TODO: REFATORAR OU COLOCAR CRÉDITOS
 void fx_init()
 {
     for(int i = 0; i < FX_N; i++)

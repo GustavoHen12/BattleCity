@@ -36,9 +36,6 @@ typedef struct{
     GameObject_t eagle;
 } Game_t;
 
-Game_t game;
-
-
 /*
 * Nesta struct são armazenados os dados significativos para processar
 * um ciclo do jogo:
@@ -60,7 +57,7 @@ typedef struct{
 //inicia
 GameObject_t initGameObject(int x, int y, int dx, int dy, int type, int heigh, int widht);
 
-void InitGame();
+void initGame(Game_t *game);
 
 //movimenta tanque
 void move(GameObject_t *tank, int direction);
@@ -70,7 +67,7 @@ void updateTank(Game_t *game, int direction);
 void nextCicle(int *cicle);
 
 //atira
-int shoot(GameObject_t *shooter, int index);
+int shoot(GameObject_t *shooter, GameObject_t *shots, int index);
 
 int updateShots(Game_t *game, GameObject_t *exploded);
 

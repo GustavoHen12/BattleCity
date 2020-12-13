@@ -3,6 +3,7 @@
 
 int main(){
     state = START;
+    int end = 0;
     for(;;){
         switch (state)
         {
@@ -19,10 +20,13 @@ int main(){
                 //gameOver();
                 break;
             case LEFT_GAME:
-                //leftGame();
+                leftGame();
+                end = 1;
                 break;
             default:
                 break;
         }
+        if(end)
+            break;
     }
 }
