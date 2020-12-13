@@ -49,13 +49,15 @@ void drawGame(Game_t *game){
     fx_draw();
 }
 
-void processGame(Game_t *game, int input, int cicle){
-    updateTank(input);
+int processGame(Game_t *game, ProcessGameInfo_t *info){
+    
+    updateTank(game, info->input);
     //atira
-    if(key[ALLEGRO_KEY_Z]){
+    if(info->shot){
         if(shoot(&game->tank, TANK_SHOT_INDEX))
             playSound(FX_TYPE_SHOT);
-    }
+        info->shot = 0;
+    } 
 
     int deadEnemie = updateEnemies(game); 
     if(deadEnemie >= 0){
@@ -73,16 +75,16 @@ void processGame(Game_t *game, int input, int cicle){
         fx_add(x, y, FX_TYPE_EXPLOSION);
     }
 
-    if(sendEnemie(game, &cicle)){
+    if(sendEnemie(game, info->cicle)){
         int x, y;
-        getInitialPosition(&x, &y, ENEMIES, positionNextEnemie);
+        getInitialPosition(&x, &y, ENEMIES, info->positionNextEnemy);
         //cria efeito do nascimento
         fx_add(x+8, y+8, FX_TYPE_CREATION);
         playSound(FX_TYPE_CREATION);
     }
 
     if(fx_finished(FX_TYPE_CREATION)){
-        crateEnemie(game->enemies, game->enemiesQuant, &positionNextEnemie);
+        crateEnemie(game->enemies, game->enemiesQuant, &info->positionNextEnemy);
     }
 
     GameObject_t explodedBlocks[10];
@@ -92,28 +94,38 @@ void processGame(Game_t *game, int input, int cicle){
         getMiddlePosition(explodedBlocks, i, &x, &y);
         fx_add(x, y, FX_TYPE_EXPLOSION);
     }
+
+    return 0;
 }
 
 // ------------ Funções de estado ------------
-
+/*
+* Exibe menu
+*/
 void start(){
     state = INIT_STAGE;
 }
 
+/*
+* Tela com o nome da fase
+*/
 void init_stage(){
     state = PLAY;
 }
 
+/*
+* Jogo em si
+*/
 void play(){
     //instancia variaveis
     InitGame();
     initDisplay();
-   
-    int input = -1;
-    int cicle = 0;
-    int positionNextEnemie = 0;
     
-    //Position_t initialPositions[4];
+    ProcessGameInfo_t info = {
+        .input = -1,
+        .cicle = 0,
+        .positionNextEnemy = 0
+    };
 
     //laço principal
     bool done = false;
@@ -132,49 +144,13 @@ void play(){
         {
             case ALLEGRO_EVENT_TIMER:
                 //movimenta tank
-                input = readInput(key);
-                updateTank(input);
+                info.input = readInput(key);
                 //atira
                 if(key[ALLEGRO_KEY_Z]){
-                    if(shoot(&game.tank, TANK_SHOT_INDEX))
-                        playSound(FX_TYPE_SHOT);
+                    info.shot = 1;
                 }
-
-                int deadEnemie = updateEnemies(&game); 
-                if(deadEnemie >= 0){
-                    int x, y;
-                    getMiddlePosition(game.enemies, deadEnemie, &x, &y);
-                    fx_add(x, y, FX_TYPE_EXPLOSION);
-                    playSound(FX_TYPE_EXPLOSION);
-                }
-
-                GameObject_t explodedShots[10];
-                int quantExplodedShots = updateShots(&game, explodedShots); 
-                for(int i = 0; i < quantExplodedShots; i++){
-                    int x, y;
-                    getMiddlePosition(explodedShots, i, &x, &y);
-                    fx_add(x, y, FX_TYPE_EXPLOSION);
-                }
-
-                if(sendEnemie(&game, &cicle)){
-                    int x, y;
-                    getInitialPosition(&x, &y, ENEMIES, positionNextEnemie);
-                    //cria efeito do nascimento
-                    fx_add(x+8, y+8, FX_TYPE_CREATION);
-                    playSound(FX_TYPE_CREATION);
-                }
-
-                if(fx_finished(FX_TYPE_CREATION)){
-                    crateEnemie(game.enemies, game.enemiesQuant, &positionNextEnemie);
-                }
-
-                GameObject_t explodedBlocks[10];
-                int quantExplodedBlocks = updateMap(&game, explodedBlocks);
-                for(int i = 0; i < quantExplodedBlocks; i++){
-                    int x, y;
-                    getMiddlePosition(explodedBlocks, i, &x, &y);
-                    fx_add(x, y, FX_TYPE_EXPLOSION);
-                }
+                
+                processGame(&game, &info);
 
                 fx_update();
                 
@@ -216,8 +192,8 @@ void play(){
             showDraw();
             redraw = false;
         }
-        cicle++;
-        resetCicle(&cicle);
+        info.cicle++;
+        resetCicle(&info.cicle);
     }
     closeDisplay();
     state = 8;

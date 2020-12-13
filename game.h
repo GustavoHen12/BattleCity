@@ -38,6 +38,25 @@ typedef struct{
 
 Game_t game;
 
+
+/*
+* Nesta struct são armazenados os dados significativos para processar
+* um ciclo do jogo:
+*/
+typedef struct{
+    // Direção (definida em gameObject.c), da entrada do usuário
+    int input;
+    // Se o usuário tenta disparar um tiro
+    int shot;
+    // Os tanques inimigos podem nascer em três posições
+    // que se repetem ciclicamente, nesta variável é armazenada qual a 
+    // próxima posição
+    int positionNextEnemy;
+    // Como algumas ações são tomadas ciclicamente é necessário guardar o ciclo
+    // cada ciclo dura 3seg, ou 180frames
+    int cicle;
+} ProcessGameInfo_t;
+
 //inicia
 GameObject_t initGameObject(int x, int y, int dx, int dy, int type, int heigh, int widht);
 
@@ -45,7 +64,7 @@ void InitGame();
 
 //movimenta tanque
 void move(GameObject_t *tank, int direction);
-void updateTank(int direction);
+void updateTank(Game_t *game, int direction);
 
 //movimenta jogo
 void nextCicle(int *cicle);
@@ -62,13 +81,13 @@ int crateEnemie(GameObject_t *enemies, int quant, int *position);
 
 int isAlive(GameObject_t *obj);
 
-void initMap();
+void initMap(); //-------
 
 int updateMap(Game_t *game, GameObject_t *exploded);
 
 void getMiddlePosition(GameObject_t *obj, int index, int *x, int *y);
 
-int sendEnemie(Game_t *game, int *cicle);
+int sendEnemie(Game_t *game, int cicle);
 
 void getInitialPosition(int *x, int *y, int type, int position);
 #endif

@@ -257,10 +257,10 @@ int positionEnable(int posX, int posY, int height, int widht){
 
 int colisionWithTank(GameObject_t *obj, Game_t *game, int x, int y, int type, int index){
     for(int i = 0; i < game->enemiesQuant; i++){
-        GameObject_t *enemie = &game->enemies[i];
-        if(isAlive(enemie) && i != index){
+        GameObject_t *enemy = &game->enemies[i];
+        if(isAlive(enemy) && i != index){
             if(colision(x, y, obj->height, obj->widht, 
-                enemie->x, enemie->y, enemie->height, enemie->widht))
+                enemy->x, enemy->y, enemy->height, enemy->widht))
                 return 1;
         }
     }
@@ -275,32 +275,32 @@ int colisionWithTank(GameObject_t *obj, Game_t *game, int x, int y, int type, in
     return 0;
 }
 // ------------ Tank ------------
-void updateTank(int direction){
+void updateTank(Game_t *game, int direction){
     if(direction != -1){
-        int newX = game.tank.x, newY = game.tank.y;
-        int dx = game.tank.dx, dy = game.tank.dy;
+        int newX = game->tank.x, newY = game->tank.y;
+        int dx = game->tank.dx, dy = game->tank.dy;
         switch (direction){
             case UP:
-                if(game.tank.dy > 0) dy *= -1;
-                newY = game.tank.y + dy;
+                if(game->tank.dy > 0) dy *= -1;
+                newY = game->tank.y + dy;
                 break;
             case DOWN:
-                if(game.tank.dy < 0) dy *= -1;
-                newY = game.tank.y + dy;
+                if(game->tank.dy < 0) dy *= -1;
+                newY = game->tank.y + dy;
                 break;
             case LEFT:
-                if(game.tank.dx > 0) dx *= -1;
-                newX = game.tank.x + dx;
+                if(game->tank.dx > 0) dx *= -1;
+                newX = game->tank.x + dx;
                 break;
             case RIGHT:
-                if(game.tank.dx < 0) dx *= -1;
-                newX = game.tank.x + dx;
+                if(game->tank.dx < 0) dx *= -1;
+                newX = game->tank.x + dx;
                 break;
             default:
                 break;
         }
         if(positionEnable(newX, newY, 28, 28) != 0){
-            move(&game.tank, direction);
+            move(&game->tank, direction);
         }
     }
 }
@@ -351,8 +351,8 @@ int updateEnemies(Game_t *game){
     return -1;
 }
 
-int sendEnemie(Game_t *game, int *cicle){
-    if(*cicle >= INTERVAL_GENERATE_ENEMIES){
+int sendEnemie(Game_t *game, int cicle){
+    if(cicle >= INTERVAL_GENERATE_ENEMIES){
         GameObject_t *enemies = game->enemies;
         for(int i = 0; i < game->enemiesQuant; i++){
             if(!isAlive(&enemies[i])){

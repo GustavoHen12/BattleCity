@@ -8,6 +8,7 @@
 
 enum{ START, INIT_STAGE, PLAY, GAME_OVER, LEFT_GAME } state;
 
+
 /*
 * Laço principal do jogo
 */
