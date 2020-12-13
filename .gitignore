@@ -1,4 +1,5 @@
-*
+*.o
+battleCity
 !*.txt
 !*.c
 !*.h
