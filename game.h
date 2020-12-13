@@ -7,7 +7,8 @@
 #include<string.h>
 #include<time.h>
 
-#include"gameObject.h"
+// #include"gameObject.h"
+#include"gameBase.h"
 
 #define MAX_SHOOT_SIZE 200
 #define INTERVAL_GENERATE_ENEMIES 180

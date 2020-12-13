@@ -45,4 +45,18 @@ typedef struct {
     int height, widht;
 } GameObject_t;
 
+void copyGameObject(GameObject_t *dest, GameObject_t *source);
+
+void setPosition(GameObject_t *object, int x, int y);
+
+GameObject_t initGameObject(int x, int y, int dx, int dy, int type, int heigh, int widht);
+
+int isAlive(GameObject_t *obj);
+
+void updateDirection(GameObject_t *object, int newDirection);
+
+void kill(GameObject_t *object);
+
+void revive(GameObject_t *object);
+
 #endif
