@@ -102,6 +102,9 @@ void initSprites()
     sprites.creation[3] = sprite_grab(352, 34, 30, 30);
     sprites.creation[4] = sprite_grab(388, 34, 30, 30);
     sprites.creation[5] = sprite_grab(418, 34, 30, 30);
+
+    sprites.eagle = sprite_grab(0, 361, EAGLE_W, EAGLE_W);
+    sprites.flag = sprite_grab(33, 361, EAGLE_W, EAGLE_W);
 }
 
 void closeSprites(){
@@ -207,6 +210,12 @@ void drawDisplay (GameObject_t *obj){
     if(type == BLOCK){
         sprite = sprites.block[direction];
     }
+    if(type == EAGLE){
+        sprite = sprites.eagle;
+    }
+    if(type == EAGLE_FLAG_END){
+        sprite = sprites.flag;
+    }
 
     al_draw_bitmap(sprite, x, y, 0);
 }
@@ -235,7 +244,6 @@ void drawWall(GameObject_t *obj, int typeWall){
 void drawInfo(){
     //desenha margem
     al_draw_filled_rectangle(BATTLE_FIELD_W, 0, DISPLAY_WIDHT, DISPLAY_HEIGH, al_map_rgb(153, 153, 153));
-    //al_draw_filled_rectangle(BATTLE_FIELD_W, 0, DISPLAY_WIDHT, DISPLAY_HEIGH, al_map_rgb(38, 38, 38));
 }
 
 void drawMenu(){

@@ -14,6 +14,7 @@
 #define INTERVAL_GENERATE_ENEMIES 180
 #define ENEMIES_QUANT 4
 #define SHOTS_QUANT 5
+#define TANK_LIFES 4
 #define TANK_SHOT_INDEX (SHOTS_QUANT-1)
 
 enum type_wall {BRICK, STONE, BUSH};
@@ -88,4 +89,7 @@ void getMiddlePosition(GameObject_t *obj, int index, int *x, int *y);
 int sendEnemie(Game_t *game, int cicle);
 
 void getInitialPosition(int *x, int *y, int type, int position);
+
+int verifyGameOver(Game_t *game);
+
 #endif

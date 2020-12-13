@@ -3,8 +3,8 @@
 void getInitialPosition(int *x, int *y, int type, int position){
     int margin = 7;
     if(type == TANK){
-        *x = 30;
-        *y = 40;
+        *x = 155;
+        *y = 395;
     }else{
         if(position == 0){
             *x = margin;
@@ -56,7 +56,7 @@ GameObject_t initGameObject(int x, int y, int dx, int dy, int type, int heigh, i
 
     //Configurações automaticas
     obj.life = 1;
-    obj.direction = DOWN;
+    obj.direction = UP;
 
     return obj;
 }

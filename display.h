@@ -37,6 +37,7 @@ typedef struct SPRITES
     ALLEGRO_BITMAP* bush;
 
     ALLEGRO_BITMAP* eagle;
+    ALLEGRO_BITMAP* flag;
 } Sprites_t;
 
 Sprites_t sprites;

@@ -16,13 +16,13 @@
 #define BLOCK_H 8
 #define BLOCK_W 16
 
-#define EAGLE_H
-#define EAGLE_W
+#define EAGLE_H 33
+#define EAGLE_W 32
 
 // #define BLOCK_H 8
 // #define BLOCK_W 22
 
-enum type_obj {TANK, ENEMIES, BLOCK, EAGLE, FLAG, SHOT, ENEMIE_SHOT};
+enum type_obj {TANK, ENEMIES, BLOCK, EAGLE, EAGLE_FLAG_END, SHOT, ENEMIE_SHOT};
 
 enum directions {UP, DOWN, LEFT, RIGHT};
 

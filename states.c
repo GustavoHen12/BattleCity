@@ -45,12 +45,14 @@ void drawGame(Game_t *game){
         }
     }
 
+    // Desenha Tank
+    drawDisplay(&game->eagle);
+
     //Desenha efeitos
     fx_draw();
 }
 
 int processGame(Game_t *game, ProcessGameInfo_t *info){
-    
     updateTank(game, info->input);
     //atira
     if(info->shot){
@@ -94,6 +96,8 @@ int processGame(Game_t *game, ProcessGameInfo_t *info){
         getMiddlePosition(explodedBlocks, i, &x, &y);
         fx_add(x, y, FX_TYPE_EXPLOSION);
     }
+
+    verifyGameOver(game);
 
     return 0;
 }
@@ -262,5 +266,4 @@ void play(){
 
 void leftGame(){
     closeDisplay();
-    state = 208;
 }
