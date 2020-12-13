@@ -72,8 +72,13 @@ void getMiddlePosition(GameObject_t *obj, int index, int *x, int *y){
 }
 
 void respawn(GameObject_t *obj, int position){
-    obj->life = 1;
-    getInitialPosition(&obj->x, &obj->y, ENEMIES, position);   
+    if(obj->type == ENEMIES){
+        obj->life = 1;
+        getInitialPosition(&obj->x, &obj->y, ENEMIES, position);   
+    }else{
+        getInitialPosition(&obj->x, &obj->y, TANK, 0);
+        obj->direction = UP;
+    }
 }
 
 /*

@@ -1,10 +1,12 @@
 #include "states.h"
 
 // ------------ Funções auxiliares ------------
-void resetCicle(int *cicle){
+int endCicle(int *cicle){
     if(*cicle > 180){
         *cicle = 0;
+        return 1;
     }
+    return 0;
 }
 
 int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
@@ -52,13 +54,15 @@ void drawGame(Game_t *game){
     fx_draw();
 }
 
-int processGame(Game_t *game, ProcessGameInfo_t *info){
-    updateTank(game, info->input);
+int processGame(Game_t *game, ProcessGameInfo_t *process, GameData_t *data){
+    if(updateTank(game, process->input)){
+        decraseLife(data);
+    }
     //atira
-    if(info->shot){
+    if(process->shot){
         if(shoot(&game->tank, game->shots, TANK_SHOT_INDEX))
             playSound(FX_TYPE_SHOT);
-        info->shot = 0;
+        process->shot = 0;
     } 
 
     int deadEnemie = updateEnemies(game); 
@@ -67,6 +71,7 @@ int processGame(Game_t *game, ProcessGameInfo_t *info){
         getMiddlePosition(game->enemies, deadEnemie, &x, &y);
         fx_add(x, y, FX_TYPE_EXPLOSION);
         playSound(FX_TYPE_EXPLOSION);
+        increaseScore(data);
     }
 
     GameObject_t explodedShots[10];
@@ -77,16 +82,17 @@ int processGame(Game_t *game, ProcessGameInfo_t *info){
         fx_add(x, y, FX_TYPE_EXPLOSION);
     }
 
-    if(sendEnemie(game, info->cicle)){
+    if(sendEnemy(game, process->cicle, data->enemiesRemaining)){
         int x, y;
-        getInitialPosition(&x, &y, ENEMIES, info->positionNextEnemy);
+        getInitialPosition(&x, &y, ENEMIES, process->positionNextEnemy);
         //cria efeito do nascimento
         fx_add(x+8, y+8, FX_TYPE_CREATION);
         playSound(FX_TYPE_CREATION);
     }
 
     if(fx_finished(FX_TYPE_CREATION)){
-        crateEnemie(game->enemies, game->enemiesQuant, &info->positionNextEnemy);
+        crateEnemie(game->enemies, game->enemiesQuant, &process->positionNextEnemy);
+        decreaseEnemiesRemainig(data);
     }
 
     GameObject_t explodedBlocks[10];
@@ -181,15 +187,23 @@ void init_stage(){
 void play(){
     Game_t game;
 
-    ProcessGameInfo_t info = {
+    ProcessGameInfo_t process = {
         .input = -1,
         .cicle = 0,
         .positionNextEnemy = 0
+    };
+
+    GameData_t data = {
+        .score = 0,
+        .pointsPerKill = 60,
+        .enemiesRemaining = 18,
+        .life = TANK_LIFES
     };
     
     //instancia variaveis
     initGame(&game);
     initSprites();
+    initIcons();
 
     //laço principal
     bool done = false;
@@ -208,13 +222,13 @@ void play(){
         {
             case ALLEGRO_EVENT_TIMER:
                 //movimenta tank
-                info.input = readInput(key);
+                process.input = readInput(key);
                 //atira
                 if(key[ALLEGRO_KEY_Z]){
-                    info.shot = 1;
+                    process.shot = 1;
                 }
                 
-                processGame(&game, &info);
+                processGame(&game, &process, &data);
 
                 fx_update();
                 
@@ -250,20 +264,23 @@ void play(){
             drawGame(&game);
             
             //Desenha margem
-            drawInfo();
+            drawInfo(data.life, data.score, data.enemiesRemaining);
 
             //Exibe na tela
             showDraw();
             redraw = false;
         }
-        info.cicle++;
-        resetCicle(&info.cicle);
+        process.cicle++;
+        if(endCicle(&process.cicle)){
+            decrasePointsPerKill(&data);
+        }
     }
-    closeSound();
     closeSprites();
+    closeIcons();
     state = LEFT_GAME;
 }
 
 void leftGame(){
     closeDisplay();
+    closeSound();
 }

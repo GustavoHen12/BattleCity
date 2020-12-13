@@ -241,9 +241,41 @@ void drawWall(GameObject_t *obj, int typeWall){
     al_draw_bitmap(sprite, x, y, 0);
 }
 
-void drawInfo(){
+void drawInfo(int life, int score, int enemiesRemaining){
     //desenha margem
-    al_draw_filled_rectangle(BATTLE_FIELD_W, 0, DISPLAY_WIDHT, DISPLAY_HEIGH, al_map_rgb(153, 153, 153));
+    al_draw_filled_rectangle(BATTLE_FIELD_W, 0, DISPLAY_WIDHT, DISPLAY_HEIGH, al_map_rgb(116, 116, 116));
+
+    //coloca a quantidade de vidas
+    al_draw_bitmap(icons.tankIcon, BATTLE_FIELD_W+20, BATTLE_FIELD_H-36, 0);
+    al_draw_textf(font, al_map_rgb(255, 255, 255), BATTLE_FIELD_W + 45, BATTLE_FIELD_H-32, 0, "%d", life);
+
+    //adiciona a quantidade de inimigos restante
+    int margin = 10, posX = BATTLE_FIELD_W + 10, posY = 20;
+    int quantLines = ceil(enemiesRemaining/2.0);
+    for(int i = 0; i < quantLines; i++){
+        posX = BATTLE_FIELD_W + 10;
+        for(int j = 0; j < 2; j++){
+            al_draw_bitmap(icons.enemyIcon, posX + margin, posY + margin, 0);
+            posX += 16;
+            enemiesRemaining--;
+            if(enemiesRemaining == 0)
+                break;
+        }
+        posY += 16;
+    }
+
+    //Pontuação
+    al_draw_textf(font, al_map_rgb(255, 255, 255), BATTLE_FIELD_W + 20, BATTLE_FIELD_H - 55, 0, "SCORE: %d", score);
+}
+
+void initIcons(){
+    icons.tankIcon = sprite_grab(31, 272, 16, 16);
+    icons.enemyIcon = sprite_grab(47, 272, 16, 16);
+}
+
+void closeIcons(){
+    al_destroy_bitmap(icons.tankIcon);
+    al_destroy_bitmap(icons.enemyIcon);
 }
 
 void drawMenu(){
@@ -307,12 +339,12 @@ void closeDisplay(){
 }
 
 void playSound(int type){
-    if(type == FX_TYPE_CREATION)
-        al_play_sample(sounds.creation, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-    if(type == FX_TYPE_EXPLOSION)
-        al_play_sample(sounds.explosion, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-    if(type == FX_TYPE_SHOT)
-        al_play_sample(sounds.shot, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+    // if(type == FX_TYPE_CREATION)
+    //     al_play_sample(sounds.creation, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+    // if(type == FX_TYPE_EXPLOSION)
+    //     al_play_sample(sounds.explosion, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+    // if(type == FX_TYPE_SHOT)
+    //     al_play_sample(sounds.shot, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 }
 
 // ------------ Efeitos -----------

@@ -14,7 +14,7 @@
 #define INTERVAL_GENERATE_ENEMIES 180
 #define ENEMIES_QUANT 4
 #define SHOTS_QUANT 5
-#define TANK_LIFES 4
+#define TANK_LIFES 3
 #define TANK_SHOT_INDEX (SHOTS_QUANT-1)
 
 enum type_wall {BRICK, STONE, BUSH};
@@ -56,6 +56,21 @@ typedef struct{
     int cicle;
 } ProcessGameInfo_t;
 
+/*
+* Struct para armazenar os dados do jogo que são exibidos para o jogador
+*/
+typedef struct{
+    // Quantas vidas o jogador possui
+    int life;
+    // Pontuação
+    int score;
+    // Peso do ponto
+    int pointsPerKill;
+    // Quantidade de inimigos restante
+    int enemiesRemaining;
+} GameData_t;
+
+
 //inicia
 GameObject_t initGameObject(int x, int y, int dx, int dy, int type, int heigh, int widht);
 
@@ -63,7 +78,7 @@ void initGame(Game_t *game);
 
 //movimenta tanque
 void move(GameObject_t *tank, int direction);
-void updateTank(Game_t *game, int direction);
+int updateTank(Game_t *game, int direction);
 
 //movimenta jogo
 void nextCicle(int *cicle);
@@ -86,10 +101,17 @@ int updateMap(Game_t *game, GameObject_t *exploded);
 
 void getMiddlePosition(GameObject_t *obj, int index, int *x, int *y);
 
-int sendEnemie(Game_t *game, int cicle);
+int sendEnemy(Game_t *game, int cicle, int enemiesRemaining);
 
 void getInitialPosition(int *x, int *y, int type, int position);
 
 int verifyGameOver(Game_t *game);
 
+void increaseScore (GameData_t *data);
+
+void decraseLife (GameData_t *data);
+
+void decreaseEnemiesRemainig(GameData_t *data);
+
+void decrasePointsPerKill(GameData_t *data);
 #endif

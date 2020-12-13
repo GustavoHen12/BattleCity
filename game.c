@@ -1,4 +1,20 @@
 #include"game.h"
+// ------------ Funções para trabalalhar com os dados do jogo ------------
+void increaseScore (GameData_t *data){
+    data->score += data->pointsPerKill;
+}
+
+void decraseLife (GameData_t *data){
+    data->life--;
+}
+
+void decreaseEnemiesRemainig(GameData_t *data){
+    data->enemiesRemaining--;
+}
+
+void decrasePointsPerKill(GameData_t *data){
+    data->pointsPerKill -= 3;
+}
 // ------------ Testes e funções básicas ------------
 
 void testMalloc(GameObject_t *obj, char *msg){
@@ -7,6 +23,7 @@ void testMalloc(GameObject_t *obj, char *msg){
         exit(1);
     }
 }
+
 // ------------ Funções jogo genéricas ------------
 
 void initGame(Game_t *game){
@@ -117,7 +134,7 @@ int colisionWithTank(GameObject_t *obj, Game_t *game, int x, int y, int type, in
 }
 
 // ------------ Tank ------------
-void updateTank(Game_t *game, int direction){
+int updateTank(Game_t *game, int direction){
     if(direction != -1){
         int newX = game->tank.x, newY = game->tank.y;
         int dx = game->tank.dx, dy = game->tank.dy;
@@ -141,11 +158,20 @@ void updateTank(Game_t *game, int direction){
             default:
                 break;
         }
-        if(positionEnable(game, newX, newY, 28, 28) != 0
+        if(positionEnable(game, newX, newY, 28, 28)
             && !colisionWithTank(&game->tank, game, newX, newY, TANK, ENEMIES_QUANT)){
             move(&game->tank, direction);
         }
     }
+
+    //---- Colisão com tiro
+    if(colisionWithShot(&game->tank, game->shots, game->shotsQuant, ENEMIE_SHOT)){
+        softKill(&game->tank);
+        respawn(&game->tank, 0);
+        return 1;
+    }
+
+    return 0;
 }
 
 // ------------ Inimigos ------------
@@ -194,8 +220,8 @@ int updateEnemies(Game_t *game){
     return -1;
 }
 
-int sendEnemie(Game_t *game, int cicle){
-    if(cicle >= INTERVAL_GENERATE_ENEMIES){
+int sendEnemy(Game_t *game, int cicle, int enemiesRemaining){
+    if(cicle >= INTERVAL_GENERATE_ENEMIES && enemiesRemaining > 0){
         GameObject_t *enemies = game->enemies;
         for(int i = 0; i < game->enemiesQuant; i++){
             if(!isAlive(&enemies[i])){

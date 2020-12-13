@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_image.h>
@@ -60,6 +61,14 @@ typedef struct {
 } MenuDisplayInfo_t;
 
 MenuDisplayInfo_t menuDisplay;
+
+// ------------ Info Icons ------------
+typedef struct {
+    ALLEGRO_BITMAP* tankIcon;
+    ALLEGRO_BITMAP* enemyIcon;
+} InfoIcons_t;
+
+InfoIcons_t icons;
 
 // ------------ Variaveis globais e config do display ------------
 //inicia as variáveis globais que serão necessárias
@@ -131,7 +140,7 @@ void drawDisplay(GameObject_t *obj);
 */
 void drawWall(GameObject_t *obj, int typeWall);
 
-void drawInfo();
+void drawInfo(int life, int score, int enemiesRemaining);
 
 void initSprites();
 
@@ -146,6 +155,9 @@ void closeSound();
 void closeSprites();
 
 void closeMenu();
+
+void initIcons();
+void closeIcons();
 
 /*
 * Exibe as imagens que foram desenhadas na tela
