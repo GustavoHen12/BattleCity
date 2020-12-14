@@ -1,6 +1,8 @@
 #include "states.h"
 
 // ------------ Funções auxiliares ------------
+//Verifica se o ciclo deve ser finalizado (cada ciclo dura 3seg)
+//retorna 1 se sim
 int endCicle(int *cicle){
     if(*cicle > 180){
         *cicle = 0;
@@ -9,6 +11,7 @@ int endCicle(int *cicle){
     return 0;
 }
 
+//Lê a direção que o usuário que ir
 int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
     if(key[ALLEGRO_KEY_LEFT])
         return LEFT;
@@ -21,6 +24,7 @@ int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
     return -1;
 }
 
+//Desenha tela principal do jogo
 void drawGame(Game_t *game){    
     // Desenha Tank
     drawSprite(&game->tank);
@@ -54,47 +58,62 @@ void drawGame(Game_t *game){
     fx_draw();
 }
 
+//Processa um ciclo do jogo
 int processGame(Game_t *game, ProcessGameInfo_t *process, GameData_t *data){
-    if(updateTank(game, process->input)){
+    //Processa tanque
+    if(updateTank(game, process->input, process->ghostMode)){
         decraseLife(data);
     }
-    //atira
+    //Se o usuário atirou
     if(process->shot){
+        //tenta atirar
         if(shoot(&game->tank, game->shots, TANK_SHOT_INDEX))
             playSound(FX_TYPE_SHOT);
         process->shot = 0;
     } 
 
+    //Processa inimigos
     int deadEnemie = updateEnemies(game); 
     if(deadEnemie >= 0){
+        //Se algum morreu:
         int x, y;
+        //adiciona efeito
         getMiddlePosition(game->enemies, deadEnemie, &x, &y);
         fx_add(x, y, FX_TYPE_EXPLOSION);
+        //Toca som de explosão
         playSound(FX_TYPE_EXPLOSION);
+        //Aumenta pontuação
         increaseScore(data);
     }
 
+    //Processa tiros
     GameObject_t explodedShots[10];
     int quantExplodedShots = updateShots(game, explodedShots); 
+    //Para cada tiro que saiu da tela, adiciona efeito de explosão
     for(int i = 0; i < quantExplodedShots; i++){
         int x, y;
         getMiddlePosition(explodedShots, i, &x, &y);
         fx_add(x, y, FX_TYPE_EXPLOSION);
     }
 
+    //Verifica se é necessário novo inimigo
     if(sendEnemy(game, process->cicle, data->enemiesRemaining)){
+        //Pega posição inicial
         int x, y;
         getInitialPosition(&x, &y, ENEMIES, process->positionNextEnemy);
         //cria efeito do nascimento
         fx_add(x+8, y+8, FX_TYPE_CREATION);
         playSound(FX_TYPE_CREATION);
     }
-
+    //Após finalizar o efeito do nascimento
     if(fx_finished(FX_TYPE_CREATION)){
+        //adiciona o inimigo na tela
         crateEnemie(game->enemies, game->enemiesQuant, &process->positionNextEnemy);
+        //diminui a quantidade de inimigos restantes
         decreaseEnemiesRemainig(data);
     }
 
+    //Verifica quais blocos de paredes foram atingidos por tiros
     GameObject_t explodedBlocks[10];
     int quantExplodedBlocks = updateMap(game, explodedBlocks);
     for(int i = 0; i < quantExplodedBlocks; i++){
@@ -103,15 +122,16 @@ int processGame(Game_t *game, ProcessGameInfo_t *process, GameData_t *data){
         fx_add(x, y, FX_TYPE_EXPLOSION);
     }
 
+    //Verifica fim de jogo
     return verifyGameOver(game, data);
 }
 
+//Desenha tela dependendo do "screenType"
 int drawScreen(int screenType){
     // Para a tela GAME OVER
     int topScore[5];
     int lastScore = 0;
 
-    // Para a tela INIT
     bool done = false;
     bool redraw = true;
     
@@ -129,6 +149,7 @@ int drawScreen(int screenType){
                 break;
 
             case ALLEGRO_EVENT_KEY_DOWN:
+                // Lê a entrada conforme o tipo da tela
                 if(type == MENU_SCREEN || type == GAME_OVER_SCREEN){
                     if(event.keyboard.keycode == ALLEGRO_KEY_S){
                         screenState = INIT_STAGE;
@@ -164,6 +185,7 @@ int drawScreen(int screenType){
         if(redraw && al_is_event_queue_empty(queue)){
             //Configurações iniciais
             beforeDraw();
+            //Desenha conforme o tipo da tela
             switch (type){
                 case MENU_SCREEN:
                     drawMenu();
@@ -183,19 +205,22 @@ int drawScreen(int screenType){
             redraw = false;
         }
     }
-
+    //retorna o próximo estado
     return screenState;
 }
+
 // ------------ Funções de estado ------------
 /*
 * Exibe menu
 */
 void start(){
+    //Inicia as configurações iniciais da tela
     initDisplay();
+    //Inicia os elementos referentes ao menu
     initMenuDisplay();
-
+    //Exibe menu, e recebe o valor do próximo estado
     state = drawScreen(MENU_SCREEN);
-
+    //Fechar elementos do menu
     closeMenu();
 }
 
@@ -203,6 +228,8 @@ void start(){
 * Tela com o nome da fase
 */
 void init_stage(){
+    //drawScreen(INIT_SCREEN);
+    //playSound();
     state = PLAY;
 }
 
@@ -210,12 +237,14 @@ void init_stage(){
 * Jogo em si
 */
 void play(){
+    //Variaveis do jogo
     Game_t game;
 
     ProcessGameInfo_t process = {
         .input = -1,
         .cicle = 0,
-        .positionNextEnemy = 0
+        .positionNextEnemy = 0,
+        .ghostMode = 0
     };
 
     GameData_t data = {
@@ -225,22 +254,24 @@ void play(){
         .life = TANK_LIFES
     };
     
-    //instancia variaveis
+    //inicia jogo e elementos da tela
     initGame(&game);
     initSprites();
     initIcons();
 
-    //laço principal
+    //variáveis necessárias
     bool done = false;
     bool redraw = true;
     int gameOver = 0;
 
     TimerEvent_t event;
     
+    //Vetor com tecla pressinada
     unsigned char key[ALLEGRO_KEY_MAX];
     memset(key, 0, sizeof(key));
     
     fx_init();
+    //Laço principal
     startFPS();
     while(1){
         al_wait_for_event(queue, &event);
@@ -253,12 +284,20 @@ void play(){
                 if(key[ALLEGRO_KEY_Z]){
                     process.shot = 1;
                 }
+                //ghosMode
+                if(key[ALLEGRO_KEY_G]){
+                    process.ghostMode = 1;
+                }
+                //Caso não tenha ocorrido o fim do jogo
                 if(!gameOver){
+                    //Processa o jogo
+                    //recebe 1 se o ocorreu um fim de jogo
                     gameOver = processGame(&game, &process, &data);
                 }
-                
+                //Atualiza os efeitos
                 fx_update();
                 
+                //Limpa teclas
                 for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
                     key[i] &= KEY_SEEN;
 
@@ -269,6 +308,11 @@ void play(){
             
             case ALLEGRO_EVENT_KEY_DOWN:
                 key[event.keyboard.keycode] = KEY_SEEN | KEY_RELEASED;
+
+                if(event.keyboard.keycode == ALLEGRO_KEY_ESCAPE){
+                    state = LEFT_GAME;
+                    done = true;
+                }
                 break;
 
             case ALLEGRO_EVENT_KEY_UP:
@@ -276,6 +320,7 @@ void play(){
                 break;
             
             case ALLEGRO_EVENT_DISPLAY_CLOSE:
+                state = LEFT_GAME;
                 done = true;
                 break;
         }
@@ -290,9 +335,10 @@ void play(){
             //Desenha objetos do jogo
             drawGame(&game);
             
-            //Desenha margem
+            //Desenha margem e informações da partida
             drawInfo(data.life, data.score, data.enemiesRemaining);
 
+            //Se ocorreu um fim de jogo
             if(gameOver){
                 drawGameOver();
             }
@@ -301,25 +347,40 @@ void play(){
             showDraw();
             redraw = false;
         }
+        //incrementa ciclo
         process.cicle++;
         if(endCicle(&process.cicle)){
+            //A cada ciclo:
+            //diminui peso dos pontos
             decrasePointsPerKill(&data);
+            //se ocorreu um fim de jogo, ao final do ciclo
+            //o loop é encerrado
             if(gameOver){
                 done = true;
             }
         }
     }
+    //Salva score
     saveScore(data.score);
+    //Fecha sprites
     closeSprites();
     closeIcons();
-    state = GAME_OVER;
+    //se o loop não foi encerrado pelo usuário vai pra GAME_OVER
+    if(state != LEFT_GAME)
+        state = GAME_OVER;
 }
 
+/*
+* Exibe a tela de score
+*/
+void gameOver(){
+    state = drawScreen(GAME_OVER);
+}
+
+/*
+* Fecha a tela do jogo
+*/
 void leftGame(){
     closeDisplay();
     closeSound();
-}
-
-void gameOver(){
-    state = drawScreen(GAME_OVER);
 }

@@ -162,7 +162,7 @@ int colisionWithTank(GameObject_t *obj, Game_t *game, int x, int y, int type, in
 }
 
 // ------------ Tank ------------
-int updateTank(Game_t *game, int direction){
+int updateTank(Game_t *game, int direction, int ghostMode){
     if(direction != -1){
        //Calcula qual a direção que o usuário pretende ir
         int newX = game->tank.x, newY = game->tank.y;
@@ -187,19 +187,25 @@ int updateTank(Game_t *game, int direction){
             default:
                 break;
         }
-        //Verifica se a posição não é parede ou um tanque
-        if(positionEnable(game, newX, newY, 28, 28)
-            && !colisionWithTank(&game->tank, game, newX, newY, TANK, ENEMIES_QUANT)){
+        //no modo fantasma ele pode atravessar as paredes
+        if(ghostMode){
             move(&game->tank, direction);
+        }else{
+            //Verifica se a posição não é parede ou um tanque
+            if(positionEnable(game, newX, newY, 28, 28)
+                && !colisionWithTank(&game->tank, game, newX, newY, TANK, ENEMIES_QUANT)){
+                move(&game->tank, direction);
+            }
         }
     }
-
-    //---- Colisão com tiro
-    //Se o tanque for atingido volta pra posição inicial e diminui 1 de vida
-    if(colisionWithShot(&game->tank, game->shots, game->shotsQuant, ENEMIE_SHOT)){
-        softKill(&game->tank);
-        respawn(&game->tank, 0);
-        return 1;
+    if(!ghostMode){
+        //---- Colisão com tiro
+        //Se o tanque for atingido volta pra posição inicial e diminui 1 de vida
+        if(colisionWithShot(&game->tank, game->shots, game->shotsQuant, ENEMIE_SHOT)){
+            softKill(&game->tank);
+            respawn(&game->tank, 0);
+            return 1;
+        }
     }
 
     return 0;
@@ -457,7 +463,7 @@ int updateShots(Game_t *game, GameObject_t *exploded){
     if(colisionWithShot(&game->shots[TANK_SHOT_INDEX], game->shots, game->shotsQuant, ENEMIE_SHOT)){
         softKill(&game->shots[TANK_SHOT_INDEX]);
     }
-    
+
     return quantExploded;
 }
 

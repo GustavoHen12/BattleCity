@@ -70,6 +70,8 @@ typedef struct{
     // Como algumas ações são tomadas ciclicamente é necessário guardar o ciclo
     // cada ciclo dura 3seg, ou 180frames
     int cicle;
+    // cheatCode
+    int ghostMode;
 } ProcessGameInfo_t;
 
 /*
@@ -101,7 +103,9 @@ int verifyGameOver(Game_t *game, GameData_t *data);
 // ------------ Tanque ------------
 //Tenta mover o tanque em direction e verifica se
 //ele foi atingido por algum tiro do inimigo
-int updateTank(Game_t *game, int direction);
+//mode corresponde ao cheatcode, se esticer ativo o tank
+//pode atravessar qualquer coisa sem ser atingido
+int updateTank(Game_t *game, int direction, int ghostMode);
 
 // ------------ Tiro ------------
 /*
