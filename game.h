@@ -9,6 +9,7 @@
 
 // #include"gameObject.h"
 #include"gameBase.h"
+#include"file.h"
 
 #define MAX_SHOOT_SIZE 200
 #define INTERVAL_GENERATE_ENEMIES 180
@@ -105,7 +106,7 @@ int sendEnemy(Game_t *game, int cicle, int enemiesRemaining);
 
 void getInitialPosition(int *x, int *y, int type, int position);
 
-int verifyGameOver(Game_t *game);
+int verifyGameOver(Game_t *game, GameData_t *data);
 
 void increaseScore (GameData_t *data);
 

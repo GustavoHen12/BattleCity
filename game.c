@@ -435,16 +435,31 @@ int updateShots(Game_t *game, GameObject_t *exploded){
     return quantExploded;
 }
 
-int verifyGameOver(Game_t *game){
+int verifyGameOver(Game_t *game, GameData_t *data){
     // ---- Verifica se o Brasão foi atingido
     if(colisionWithShot(&game->eagle, game->shots, game->shotsQuant, SHOT)){
         game->eagle.type = EAGLE_FLAG_END;
+        return 1;
     }
 
     if(colisionWithShot(&game->eagle, game->shots, game->shotsQuant, ENEMIE_SHOT)){
         game->eagle.type = EAGLE_FLAG_END;
+        return 1;
     }
 
     // ---- Verifica se o Tank esta vivo
+    if(data->life == 0){
+        return 1;
+    }
+
+    // ---- Verifica se ainda resta inimigos
+    if(data->enemiesRemaining == 0){
+        for(int i = 0; i < game->enemiesQuant; i++){
+            if(isAlive(&game->enemies[i]))
+                return 0;
+        }   
+        return 1;
+    }
+
     return 0;
 }

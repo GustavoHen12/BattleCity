@@ -1,5 +1,7 @@
 #include"display.h"
 
+// Verifica se foi possivel fazer a inicialização de "boot" corretamente
+// (créditos: ver README)
 void check (bool test, const char *boot) {
     if(test) return;
 
@@ -70,32 +72,56 @@ ALLEGRO_BITMAP* sprite_grab(int x, int y, int w, int h)
     return sprite;
 }
 
-void initSprites()
-{
-    sprites.tank[SPRITE_UP] = sprite_grab(2, 2, TANK_W, TANK_H);
-    sprites.tank[SPRITE_RIGHT] = sprite_grab(2, 34, TANK_W, TANK_H);
-    sprites.tank[SPRITE_DOWN] = sprite_grab(2, 65, TANK_W, TANK_H);
-    sprites.tank[SPRITE_LEFT] = sprite_grab(2, 98, TANK_W, TANK_H);
+void beforeDraw(){
+    al_clear_to_color(al_map_rgb(0, 0, 0));
+}
 
-    sprites.enemies[SPRITE_UP] = sprite_grab(2, 426, ENEMIES_W, ENEMIES_H);
-    sprites.enemies[SPRITE_RIGHT] = sprite_grab(2, 459, ENEMIES_W, ENEMIES_H);
-    sprites.enemies[SPRITE_DOWN] = sprite_grab(2, 489, ENEMIES_W, ENEMIES_H);
-    sprites.enemies[SPRITE_LEFT] = sprite_grab(2, 522, ENEMIES_W, ENEMIES_H);
+void showDraw(){
+    al_flip_display();
+}
 
-    sprites.shots[SPRITE_UP] = sprite_grab(0, 350, SHOT_W, SHOT_H);
-    sprites.shots[SPRITE_RIGHT] = sprite_grab(8, 352, SHOT_W, SHOT_H);
-    sprites.shots[SPRITE_DOWN] = sprite_grab(16, 350, SHOT_W, SHOT_H);
-    sprites.shots[SPRITE_LEFT] = sprite_grab(24, 352, SHOT_W, SHOT_H);
+void startFPS(){
+    //inicia a contagem do timer
+    al_start_timer(timer);
+}
+
+// ------------ Sprites ------------
+
+void initSprites() {
+    /*
+    * Quando um elemento possui mais de um sprite, eles são organizados em um vetor
+    * cujo indice corresponde a direção do sprite (as direções são definidas em GameObject.h)
+    */   
+    //Inicia os sprites do tanque
+    sprites.tank[UP] = sprite_grab(2, 2, TANK_W, TANK_H);
+    sprites.tank[RIGHT] = sprite_grab(2, 34, TANK_W, TANK_H);
+    sprites.tank[DOWN] = sprite_grab(2, 65, TANK_W, TANK_H);
+    sprites.tank[LEFT] = sprite_grab(2, 98, TANK_W, TANK_H);
     
+    //Inicia os sprites do tanque inimigo
+    sprites.enemies[UP] = sprite_grab(2, 426, ENEMIES_W, ENEMIES_H);
+    sprites.enemies[RIGHT] = sprite_grab(2, 459, ENEMIES_W, ENEMIES_H);
+    sprites.enemies[DOWN] = sprite_grab(2, 489, ENEMIES_W, ENEMIES_H);
+    sprites.enemies[LEFT] = sprite_grab(2, 522, ENEMIES_W, ENEMIES_H);
+
+    //Inicia os sprites dos tiros
+    sprites.shots[UP] = sprite_grab(0, 350, SHOT_W, SHOT_H);
+    sprites.shots[RIGHT] = sprite_grab(8, 352, SHOT_W, SHOT_H);
+    sprites.shots[DOWN] = sprite_grab(16, 350, SHOT_W, SHOT_H);
+    sprites.shots[LEFT] = sprite_grab(24, 352, SHOT_W, SHOT_H);
+    
+    //Inicia os sprites do bloco de tijolo, pedra e arbusto
     sprites.block[0] = sprite_grab(96, 264, BLOCK_W, BLOCK_H);
     sprites.block[1] = sprite_grab(184, 264, BLOCK_W, BLOCK_H);
     sprites.stone = sprite_grab(0, 272, BLOCK_W, BLOCK_H*2);
     sprites.bush = sprite_grab(0, 304, BLOCK_W, BLOCK_H*2);
 
+    //Inicia os sprites que são usados como frames no efeito de explosão
     sprites.explosion[0] = sprite_grab(255, 64, 32, 35);
     sprites.explosion[1] = sprite_grab(290, 64, 32, 45);
     sprites.explosion[2] = sprite_grab(320, 64, 45, 45);
 
+    //Inicia os sprites que são usados como frames no efeito de criação
     sprites.creation[0] = sprite_grab(258, 34, 30, 30);
     sprites.creation[1] = sprite_grab(288, 34, 30, 30);
     sprites.creation[2] = sprite_grab(318, 34, 30, 30);
@@ -103,100 +129,18 @@ void initSprites()
     sprites.creation[4] = sprite_grab(388, 34, 30, 30);
     sprites.creation[5] = sprite_grab(418, 34, 30, 30);
 
+    //Inicia os sprites da águia e da bandeira de derrota
     sprites.eagle = sprite_grab(0, 361, EAGLE_W, EAGLE_W);
     sprites.flag = sprite_grab(33, 361, EAGLE_W, EAGLE_W);
 }
 
-void closeSprites(){
-    for(int i = 0; i < 4; i++){
-        al_destroy_bitmap(sprites.tank[i]);
-        al_destroy_bitmap(sprites.enemies[i]);
-        al_destroy_bitmap(sprites.shots[i]);
-    }
-
-    al_destroy_bitmap(sprites.stone);
-    al_destroy_bitmap(sprites.bush);
-    al_destroy_bitmap(sprites.block[0]);
-    al_destroy_bitmap(sprites.block[1]);
-
-    for(int i = 0; i < 6; i++){
-        if(i < 3)
-            al_destroy_bitmap(sprites.explosion[i]);
-        al_destroy_bitmap(sprites.creation[i]);
-    }
-
-    al_destroy_bitmap(sprites.eagle);
-}
-
-void closeSound(){
-    al_destroy_sample(sounds.explosion);
-    al_destroy_sample(sounds.creation);
-    al_destroy_sample(sounds.shot);
-}
-
-void initSound(){
-    sounds.explosion = al_load_sample("resources/explosion.wav");
-    check(sounds.explosion, "som explosão");
-    sounds.creation = al_load_sample("resources/creation.wav");
-    check(sounds.explosion, "som criação");
-    sounds.shot = al_load_sample("resources/shot.wav");
-    check(sounds.explosion, "som tiro");
-}
-
-int initDisplay (){
-    //inicia as configurações do display
-    initConf();
-
-    //inicia sons
-    initSound();
-
-    return 1;
-}
-
-void initMenuDisplay(){
-    // pega logo
-    menuDisplay.logo = sprite_grab(133, 275, 383, 143);
-
-    menuDisplay.startGame = malloc(sizeof(char)*30);
-    if(!menuDisplay.startGame){
-        fprintf(stderr, "Não foi possível alocar espaço para o texto de inicio do jogo !\n");
-        exit(1);
-    }
-    strcpy(menuDisplay.startGame, "Pressione 's' para começar");
-    
-    menuDisplay.help = malloc(sizeof(char)*30);
-    if(!menuDisplay.help){
-        fprintf(stderr, "Não foi possível alocar espaço para o texto de ajuda !\n");
-        exit(1);
-    }
-    strcpy(menuDisplay.help, "h - Ajuda");
-    
-    menuDisplay.finish = malloc(sizeof(char)*30);
-    if(!menuDisplay.help){
-        fprintf(stderr, "Não foi possível alocar espaço para o texto de sair !\n");
-        exit(1);
-    }
-    strcpy(menuDisplay.finish, "Esc - Sair");
-}
-
-void closeMenu(){
-    al_destroy_bitmap(menuDisplay.logo);
-    free(menuDisplay.startGame);
-    free(menuDisplay.finish);
-    free(menuDisplay.help);
-}
-
-
-void startFPS(){
-    //inicia a contagem do timer
-    al_start_timer(timer);
-}
-
-void drawDisplay (GameObject_t *obj){
+void drawSprite (GameObject_t *obj){
     int type = obj->type;
     int direction = obj->direction;
     int x = obj->x, y = obj->y;
     //desenha o sprite "sprite" na tela na posicação (x, y)
+
+    //A partir do tipo do objeto seleciona o sprite adequado
     ALLEGRO_BITMAP* sprite;
     if(type == TANK){
         sprite = sprites.tank[direction];
@@ -216,14 +160,93 @@ void drawDisplay (GameObject_t *obj){
     if(type == EAGLE_FLAG_END){
         sprite = sprites.flag;
     }
-
+    // Desenha sprite
     al_draw_bitmap(sprite, x, y, 0);
 }
 
+
+void closeSprites(){
+    //Fecha os sprites do tank, inimigo e tiros
+    for(int i = 0; i < 4; i++){
+        al_destroy_bitmap(sprites.tank[i]);
+        al_destroy_bitmap(sprites.enemies[i]);
+        al_destroy_bitmap(sprites.shots[i]);
+    }
+
+    //Fecha os sprites dos blocos das paredes
+    al_destroy_bitmap(sprites.stone);
+    al_destroy_bitmap(sprites.bush);
+    al_destroy_bitmap(sprites.block[0]);
+    al_destroy_bitmap(sprites.block[1]);
+
+    //Fecha os sprites dos efeitos de explosão e criação
+    for(int i = 0; i < 6; i++){
+        if(i < 3)
+            al_destroy_bitmap(sprites.explosion[i]);
+        al_destroy_bitmap(sprites.creation[i]);
+    }
+
+    //Fecha os sprites da bandeira e águia
+    al_destroy_bitmap(sprites.eagle);
+    al_destroy_bitmap(sprites.flag);
+}
+
+// ------------ Sons ------------
+void initSound(){
+    //Som da explosão
+    sounds.explosion = al_load_sample("resources/explosion.wav");
+    check(sounds.explosion, "som explosão");
+    //Som do efeito de criação de um inimigo
+    sounds.creation = al_load_sample("resources/creation.wav");
+    check(sounds.explosion, "som criação");
+    //Som do tiro
+    sounds.shot = al_load_sample("resources/shot.wav");
+    check(sounds.explosion, "som tiro");
+}
+
+void closeSound(){
+    //Fecha sons
+    al_destroy_sample(sounds.explosion);
+    al_destroy_sample(sounds.creation);
+    al_destroy_sample(sounds.shot);
+}
+
+void playSound(int type){
+    if(type == FX_TYPE_CREATION)
+        al_play_sample(sounds.creation, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+    if(type == FX_TYPE_EXPLOSION)
+        al_play_sample(sounds.explosion, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+    if(type == FX_TYPE_SHOT)
+        al_play_sample(sounds.shot, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+}
+
+// ------------ Display ------------
+int initDisplay (){
+    //inicia as configurações do display
+    initConf();
+
+    //inicia sons
+    initSound();
+
+    return 1;
+}
+
+void closeDisplay(){
+    //destroi objetos criados
+    al_destroy_font(font);
+    al_destroy_display(screen);
+    al_destroy_timer(timer);
+    al_destroy_event_queue(queue);
+    al_destroy_bitmap(_sheet);
+}
+
+// ------------ Wall ------------
 void drawWall(GameObject_t *obj, int typeWall){
     int direction = obj->direction;
     int x = obj->x, y = obj->y;
-    //desenha o sprite "sprite" na tela na posicação (x, y)
+    // Diferente do que acontece em drawSprite
+    // aqui o tipo do sprite a ser exibido é selecionado a partir
+    // do tipo da parede, pois todos os blocos possuem o tipo BLOCK
     ALLEGRO_BITMAP* sprite;
     switch (typeWall){
         case SPRITE_BRICK:
@@ -238,9 +261,11 @@ void drawWall(GameObject_t *obj, int typeWall){
     default:
         break;
     }
+    //Exibe bloco
     al_draw_bitmap(sprite, x, y, 0);
 }
 
+// ------------ Info ------------
 void drawInfo(int life, int score, int enemiesRemaining){
     //desenha margem
     al_draw_filled_rectangle(BATTLE_FIELD_W, 0, DISPLAY_WIDHT, DISPLAY_HEIGH, al_map_rgb(116, 116, 116));
@@ -278,6 +303,46 @@ void closeIcons(){
     al_destroy_bitmap(icons.enemyIcon);
 }
 
+// ------------ Menu ------------
+
+void initMenuDisplay(){
+    // pega logo
+    menuDisplay.logo = sprite_grab(133, 275, 383, 143);
+
+    // Texto para inicio do jogo
+    menuDisplay.startGame = malloc(sizeof(char)*30);
+    if(!menuDisplay.startGame){
+        fprintf(stderr, "Não foi possível alocar espaço para o texto de inicio do jogo !\n");
+        exit(1);
+    }
+    strcpy(menuDisplay.startGame, "Pressione 's' para começar");
+
+    // Texto para ir a tela de ajuda
+    menuDisplay.help = malloc(sizeof(char)*30);
+    if(!menuDisplay.help){
+        fprintf(stderr, "Não foi possível alocar espaço para o texto de ajuda !\n");
+        exit(1);
+    }
+    strcpy(menuDisplay.help, "h - Ajuda");
+
+    // Texto para fechar jogo
+    menuDisplay.finish = malloc(sizeof(char)*30);
+    if(!menuDisplay.help){
+        fprintf(stderr, "Não foi possível alocar espaço para o texto de sair !\n");
+        exit(1);
+    }
+    strcpy(menuDisplay.finish, "Esc - Sair");
+}
+
+void closeMenu(){
+    //Fecha logo
+    al_destroy_bitmap(menuDisplay.logo);
+    //Libera memória dos textos
+    free(menuDisplay.startGame);
+    free(menuDisplay.finish);
+    free(menuDisplay.help);
+}
+
 void drawMenu(){
     al_draw_bitmap(menuDisplay.logo, 85, 70, 0);
     
@@ -305,47 +370,45 @@ void drawHelp(){
 
     Cheat code: ghost
     */
-
+    // Textos definidos
     char instructions [] = "Instruções:\nUtilize as setas para se mover, e a tecla z para atirar\nA cada 3 seg. o valor em pontos para cada tank destruido diminui\nNão permita que os inimigos destruam a àguia";     
     char author[] = "Autor:\nGustavo H. da Silva Barbosa\nUFPR\ngithub.com/GustavoHen12";
     char cheatCode[] = "Cheat code: ghost";
     char exit[] = "m - Voltar ao menu";
-
+    // Verifica a margem da tela e o tamanho da linha
     int margin = 20;
     int sizeLine = al_get_font_line_height(font);
+    //Adiciona instruções
     al_draw_multiline_text(font, al_map_rgb(255, 255, 255), margin, margin, DISPLAY_HEIGH - margin, sizeLine, ALLEGRO_ALIGN_LEFT, instructions);
-
+    //Adiciona créditos
     al_draw_multiline_text(font, al_map_rgb(255, 255, 255), margin, (sizeLine*12) + margin, DISPLAY_HEIGH - margin, sizeLine, ALLEGRO_ALIGN_LEFT, author);
+    //Adiciona cheatcode
     al_draw_text(font, al_map_rgb(255, 255, 255), margin, (sizeLine*20) + margin, 0, cheatCode);
     
     al_draw_text(font, al_map_rgb(255, 255, 255), margin, DISPLAY_HEIGH - margin, 0, exit);
 }
 
-void beforeDraw(){
-    al_clear_to_color(al_map_rgb(0, 0, 0));
+// ------------ Game Over ------------
+void drawGameOver(){
+    al_draw_text(font, al_map_rgb(255, 255, 255), DISPLAY_HEIGH/2, DISPLAY_WIDHT/2, 0, "GAME OVER");
 }
 
-void showDraw(){
-    al_flip_display();
+void drawScore(int *topScore, int lastScore){
+    int margin = 20;
+    al_draw_text(font, al_map_rgb(255, 255, 255), margin, margin, 0, "TOP 5:");
+    
+    //desenha o top 5
+    for(int i = 0; i < 5; i++){
+        al_draw_textf(font, al_map_rgb(255, 255, 255), margin, margin+((i+1)*margin), 0, "%d. %d", (i+1), topScore[i]);
+    }
+
+    //desenha a ultima pontuação
+    al_draw_textf(font, al_map_rgb(255, 255, 255), margin, 200, 0, "Sua última pontuação: %d", lastScore);
+
+    //Jogar novamente
+    al_draw_textf(font, al_map_rgb(255, 255, 255), margin, DISPLAY_HEIGH - margin, 0, "s - Jogar novamente");
 }
 
-void closeDisplay(){
-    //destroi objetos criados
-    al_destroy_font(font);
-    al_destroy_display(screen);
-    al_destroy_timer(timer);
-    al_destroy_event_queue(queue);
-    al_destroy_bitmap(_sheet);
-}
-
-void playSound(int type){
-    // if(type == FX_TYPE_CREATION)
-    //     al_play_sample(sounds.creation, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-    // if(type == FX_TYPE_EXPLOSION)
-    //     al_play_sample(sounds.explosion, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-    // if(type == FX_TYPE_SHOT)
-    //     al_play_sample(sounds.shot, 0.75, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-}
 
 // ------------ Efeitos -----------
 

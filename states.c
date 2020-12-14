@@ -23,19 +23,19 @@ int readInput(unsigned char key[ALLEGRO_KEY_MAX]){
 
 void drawGame(Game_t *game){    
     // Desenha Tank
-    drawDisplay(&game->tank);
+    drawSprite(&game->tank);
     
     //Desenha inimigos
     for(int i = 0; i < game->enemiesQuant; i++){
         if(isAlive(&(game->enemies[i]))){
-            drawDisplay(&(game->enemies[i]));
+            drawSprite(&(game->enemies[i]));
         }
     }
     
     //Desenha tiro
     for(int i = 0; i < game->shotsQuant; i++){
         if(isAlive(&game->shots[i])){
-            drawDisplay(&(game->shots[i]));
+            drawSprite(&(game->shots[i]));
         }
     }
 
@@ -48,7 +48,7 @@ void drawGame(Game_t *game){
     }
 
     // Desenha Tank
-    drawDisplay(&game->eagle);
+    drawSprite(&game->eagle);
 
     //Desenha efeitos
     fx_draw();
@@ -103,22 +103,20 @@ int processGame(Game_t *game, ProcessGameInfo_t *process, GameData_t *data){
         fx_add(x, y, FX_TYPE_EXPLOSION);
     }
 
-    verifyGameOver(game);
-
-    return 0;
+    return verifyGameOver(game, data);
 }
 
-// ------------ Funções de estado ------------
-/*
-* Exibe menu
-*/
-void start(){
-    initDisplay();
-    initMenuDisplay();
+int drawScreen(int screenType){
+    // Para a tela GAME OVER
+    int topScore[5];
+    int lastScore = 0;
 
+    // Para a tela INIT
     bool done = false;
     bool redraw = true;
-    bool help = false;
+    
+    int type = screenType;
+    int screenState = state;
 
     TimerEvent_t event;
     startFPS();
@@ -131,25 +129,31 @@ void start(){
                 break;
 
             case ALLEGRO_EVENT_KEY_DOWN:
-                if(event.keyboard.keycode == ALLEGRO_KEY_S){
-                    state = INIT_STAGE;
-                    done = true;
+                if(type == MENU_SCREEN || type == GAME_OVER_SCREEN){
+                    if(event.keyboard.keycode == ALLEGRO_KEY_S){
+                        screenState = INIT_STAGE;
+                        done = true;
+                    }
                 }
-                if(event.keyboard.keycode == ALLEGRO_KEY_H){
-                    help = true;
+                if(type == MENU_SCREEN){
+                    if(event.keyboard.keycode == ALLEGRO_KEY_H){
+                        type = HELP_SCREEN;
+                    }
                 }
-                if(event.keyboard.keycode == ALLEGRO_KEY_M){
-                    help = false;
+                if(type == HELP_SCREEN){
+                    if(event.keyboard.keycode == ALLEGRO_KEY_M){
+                            type = MENU_SCREEN;
+                    }
                 }
 
                 if(event.keyboard.keycode == ALLEGRO_KEY_ESCAPE){
-                    state = LEFT_GAME;
+                    screenState = LEFT_GAME;
                     done = true;
                 }
                 break;
 
             case ALLEGRO_EVENT_DISPLAY_CLOSE:
-                state = LEFT_GAME;
+                screenState = LEFT_GAME;
                 done = true;
                 break;
         }
@@ -160,16 +164,37 @@ void start(){
         if(redraw && al_is_event_queue_empty(queue)){
             //Configurações iniciais
             beforeDraw();
-            if(help)
-                drawHelp();
-            else
-                drawMenu();
-
+            switch (type){
+                case MENU_SCREEN:
+                    drawMenu();
+                    break;
+                case HELP_SCREEN:
+                    drawHelp();
+                    break;
+                case GAME_OVER_SCREEN:
+                    getTopScore(topScore, &lastScore);
+                    drawScore(topScore, lastScore);
+                    break;
+            default:
+                break;
+            }
             //Exibe na tela
             showDraw();
             redraw = false;
         }
     }
+
+    return screenState;
+}
+// ------------ Funções de estado ------------
+/*
+* Exibe menu
+*/
+void start(){
+    initDisplay();
+    initMenuDisplay();
+
+    state = drawScreen(MENU_SCREEN);
 
     closeMenu();
 }
@@ -208,7 +233,8 @@ void play(){
     //laço principal
     bool done = false;
     bool redraw = true;
-    
+    int gameOver = 0;
+
     TimerEvent_t event;
     
     unsigned char key[ALLEGRO_KEY_MAX];
@@ -227,9 +253,10 @@ void play(){
                 if(key[ALLEGRO_KEY_Z]){
                     process.shot = 1;
                 }
+                if(!gameOver){
+                    gameOver = processGame(&game, &process, &data);
+                }
                 
-                processGame(&game, &process, &data);
-
                 fx_update();
                 
                 for(int i = 0; i < ALLEGRO_KEY_MAX; i++)
@@ -266,6 +293,10 @@ void play(){
             //Desenha margem
             drawInfo(data.life, data.score, data.enemiesRemaining);
 
+            if(gameOver){
+                drawGameOver();
+            }
+
             //Exibe na tela
             showDraw();
             redraw = false;
@@ -273,14 +304,22 @@ void play(){
         process.cicle++;
         if(endCicle(&process.cicle)){
             decrasePointsPerKill(&data);
+            if(gameOver){
+                done = true;
+            }
         }
     }
+    saveScore(data.score);
     closeSprites();
     closeIcons();
-    state = LEFT_GAME;
+    state = GAME_OVER;
 }
 
 void leftGame(){
     closeDisplay();
     closeSound();
+}
+
+void gameOver(){
+    state = drawScreen(GAME_OVER);
 }

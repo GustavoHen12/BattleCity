@@ -1,9 +1,11 @@
 #include<stdio.h>
 #include"states.h"
 
+
 int main(){
     state = START;
     int end = 0;
+
     for(;;){
         switch (state)
         {
@@ -17,7 +19,7 @@ int main(){
                 play();
                 break;
             case GAME_OVER:
-                //gameOver();
+                gameOver();
                 break;
             case LEFT_GAME:
                 leftGame();
