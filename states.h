@@ -11,12 +11,12 @@ enum{ START, INIT_STAGE, PLAY, GAME_OVER, LEFT_GAME } state;
 enum {MENU_SCREEN, HELP_SCREEN, INIT_SCREEN, GAME_OVER_SCREEN} screenType;
 
 /*
-* Configurações iniciais de tela, exibe menu
+* Configurações iniciais de tela, exibe menu e tela de ajuda
 */
 void start();
 
 /*
-* Configurações do jogo
+* Tela de preparação pro jogo
 */
 void init_stage();
 
@@ -34,4 +34,5 @@ void leftGame();
 * Exibe Score
 */
 void gameOver();
+
 #endif

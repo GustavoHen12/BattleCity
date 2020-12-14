@@ -2,10 +2,13 @@
 
 void getInitialPosition(int *x, int *y, int type, int position){
     int margin = 7;
+    //Se for tank
     if(type == TANK){
         *x = 155;
         *y = 395;
     }else{
+        //Se for um tanque inimigo retorna a posição inicial
+        //correspondente a "position"
         if(position == 0){
             *x = margin;
             *y = margin;
@@ -114,10 +117,7 @@ int colision(int xA, int yA, int heightA, int widhtA, int xB, int yB, int height
     return 1;
 }
 
-/*
-* Esta função recebe um objeto e uma direção, e atualiza a
-* direção e a velocidade do objeto
-*/
+
 void updateDirection(GameObject_t *object, int newDirection){
     switch (newDirection) {
         case UP:
