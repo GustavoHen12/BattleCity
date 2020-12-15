@@ -368,12 +368,12 @@ void drawHelp(){
     UFPR
     github.com/GustavoHen12
 
-    Cheat code: ghost
+    Cheat code: g
     */
     // Textos definidos
     char instructions [] = "Instruções:\nUtilize as setas para se mover, e a tecla z para atirar\nA cada 3 seg. o valor em pontos para cada tank destruido diminui\nNão permita que os inimigos destruam a àguia";     
     char author[] = "Autor:\nGustavo H. da Silva Barbosa\nUFPR\ngithub.com/GustavoHen12";
-    char cheatCode[] = "Cheat code: ghost";
+    char cheatCode[] = "Cheat code: g";
     char exit[] = "m - Voltar ao menu";
     // Verifica a margem da tela e o tamanho da linha
     int margin = 20;

@@ -41,6 +41,7 @@ void saveScore(int score){
         fprintf(stderr, "[ERRO INTERNO]: Não foi possível salvar o score %d.\n", score);
         exit(1);
     }
+    fclose(arq);
 }
 
 void getTopScore(int *topScore, int *lastScore){
@@ -60,13 +61,16 @@ void getTopScore(int *topScore, int *lastScore){
             vet = realloc(vet, sizeof(int)*100*count);
         }
 	}
-    //Passa o ultimo valor salvo para "lastscore0"
-    *lastScore = vet[size-1];
+    //Passa o ultimo valor salvo para "lastscore"
+    *lastScore = num;
 
     //Ordena o vetor
     inserctionSort(vet, 0, size-1);
     //passa os 5 primeiros valores para o top score
     for(int i = 0; i < 5; i++){
+        if(i > size)
+            topScore[i] = 0;
         topScore[i] = vet[i];
     }
+    fclose(arq);
 }

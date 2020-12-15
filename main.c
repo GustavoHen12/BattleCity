@@ -1,11 +1,22 @@
 #include<stdio.h>
 #include"states.h"
 
+void imprime_vetor (int v[], int tam) {
+    int i;
+
+    for (i=0; i<tam-1; i++)
+        printf("%d ",v[i]);
+    printf("%d\n",v[tam-1]);
+}
+
 
 int main(){
     state = START;
     int end = 0;
-
+    int vet[5], l;
+    getTopScore(vet, &l);
+    printf("%d \n", l);
+    imprime_vetor(vet, 5);
     for(;;){
         switch (state)
         {

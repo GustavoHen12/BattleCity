@@ -58,74 +58,6 @@ void drawGame(Game_t *game){
     fx_draw();
 }
 
-//Processa um ciclo do jogo
-int processGame(Game_t *game, ProcessGameInfo_t *process, GameData_t *data){
-    //Processa tanque
-    if(updateTank(game, process->input, process->ghostMode)){
-        decraseLife(data);
-    }
-    //Se o usuário atirou
-    if(process->shot){
-        //tenta atirar
-        if(shoot(&game->tank, game->shots, TANK_SHOT_INDEX))
-            playSound(FX_TYPE_SHOT);
-        process->shot = 0;
-    } 
-
-    //Processa inimigos
-    int deadEnemie = updateEnemies(game); 
-    if(deadEnemie >= 0){
-        //Se algum morreu:
-        int x, y;
-        //adiciona efeito
-        getMiddlePosition(game->enemies, deadEnemie, &x, &y);
-        fx_add(x, y, FX_TYPE_EXPLOSION);
-        //Toca som de explosão
-        playSound(FX_TYPE_EXPLOSION);
-        //Aumenta pontuação
-        increaseScore(data);
-    }
-
-    //Processa tiros
-    GameObject_t explodedShots[10];
-    int quantExplodedShots = updateShots(game, explodedShots); 
-    //Para cada tiro que saiu da tela, adiciona efeito de explosão
-    for(int i = 0; i < quantExplodedShots; i++){
-        int x, y;
-        getMiddlePosition(explodedShots, i, &x, &y);
-        fx_add(x, y, FX_TYPE_EXPLOSION);
-    }
-
-    //Verifica se é necessário novo inimigo
-    if(sendEnemy(game, process->cicle, data->enemiesRemaining)){
-        //Pega posição inicial
-        int x, y;
-        getInitialPosition(&x, &y, ENEMIES, process->positionNextEnemy);
-        //cria efeito do nascimento
-        fx_add(x+8, y+8, FX_TYPE_CREATION);
-        playSound(FX_TYPE_CREATION);
-    }
-    //Após finalizar o efeito do nascimento
-    if(fx_finished(FX_TYPE_CREATION)){
-        //adiciona o inimigo na tela
-        crateEnemie(game->enemies, game->enemiesQuant, &process->positionNextEnemy);
-        //diminui a quantidade de inimigos restantes
-        decreaseEnemiesRemainig(data);
-    }
-
-    //Verifica quais blocos de paredes foram atingidos por tiros
-    GameObject_t explodedBlocks[10];
-    int quantExplodedBlocks = updateMap(game, explodedBlocks);
-    for(int i = 0; i < quantExplodedBlocks; i++){
-        int x, y;
-        getMiddlePosition(explodedBlocks, i, &x, &y);
-        fx_add(x, y, FX_TYPE_EXPLOSION);
-    }
-
-    //Verifica fim de jogo
-    return verifyGameOver(game, data);
-}
-
 //Desenha tela dependendo do "screenType"
 int drawScreen(int screenType){
     // Para a tela GAME OVER
@@ -207,6 +139,75 @@ int drawScreen(int screenType){
     }
     //retorna o próximo estado
     return screenState;
+}
+
+
+//Processa um ciclo do jogo
+int processGame(Game_t *game, ProcessGameInfo_t *process, GameData_t *data){
+    //Processa tanque
+    if(updateTank(game, process->input, process->ghostMode)){
+        decraseLife(data);
+    }
+    //Se o usuário atirou
+    if(process->shot){
+        //tenta atirar
+        if(shoot(&game->tank, game->shots, TANK_SHOT_INDEX))
+            playSound(FX_TYPE_SHOT);
+        process->shot = 0;
+    } 
+
+    //Processa inimigos
+    int deadEnemie = updateEnemies(game); 
+    if(deadEnemie >= 0){
+        //Se algum morreu:
+        int x, y;
+        //adiciona efeito
+        getMiddlePosition(game->enemies, deadEnemie, &x, &y);
+        fx_add(x, y, FX_TYPE_EXPLOSION);
+        //Toca som de explosão
+        playSound(FX_TYPE_EXPLOSION);
+        //Aumenta pontuação
+        increaseScore(data);
+    }
+
+    //Processa tiros
+    GameObject_t explodedShots[10];
+    int quantExplodedShots = updateShots(game, explodedShots); 
+    //Para cada tiro que saiu da tela, adiciona efeito de explosão
+    for(int i = 0; i < quantExplodedShots; i++){
+        int x, y;
+        getMiddlePosition(explodedShots, i, &x, &y);
+        fx_add(x, y, FX_TYPE_EXPLOSION);
+    }
+
+    //Verifica se é necessário novo inimigo
+    if(sendEnemy(game, process->cicle, data->enemiesRemaining)){
+        //Pega posição inicial
+        int x, y;
+        getInitialPosition(&x, &y, ENEMIES, process->positionNextEnemy);
+        //cria efeito do nascimento
+        fx_add(x+8, y+8, FX_TYPE_CREATION);
+        playSound(FX_TYPE_CREATION);
+    }
+    //Após finalizar o efeito do nascimento
+    if(fx_finished(FX_TYPE_CREATION)){
+        //adiciona o inimigo na tela
+        crateEnemie(game->enemies, game->enemiesQuant, &process->positionNextEnemy);
+        //diminui a quantidade de inimigos restantes
+        decreaseEnemiesRemainig(data);
+    }
+
+    //Verifica quais blocos de paredes foram atingidos por tiros
+    GameObject_t explodedBlocks[10];
+    int quantExplodedBlocks = updateMap(game, explodedBlocks);
+    for(int i = 0; i < quantExplodedBlocks; i++){
+        int x, y;
+        getMiddlePosition(explodedBlocks, i, &x, &y);
+        fx_add(x, y, FX_TYPE_EXPLOSION);
+    }
+
+    //Verifica fim de jogo
+    return verifyGameOver(game, data);
 }
 
 // ------------ Funções de estado ------------
